@@ -245,6 +245,7 @@ int main(){
 	cudaFree(d_shuffle_rands);
 	cudaFree(d_genetic_rands);
 	cudaFree(d_auxiliary);
+	cudaFree(d_vec_graph);
 #if DEBUG
 	free(pop);
 	free(off);

@@ -4,4 +4,8 @@ rm a.out
 
 nvcc -isystem ./utils -isystem ./device_utils -isystem ./kernels ./main/$1 -lcurand  -o a.out 
 
-./a.out 
+mkdir logs/$1_logs
+
+./a.out > logs/$1_logs/run.log
+
+cat logs/$1_logs/run.log

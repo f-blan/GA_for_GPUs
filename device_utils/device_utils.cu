@@ -1,7 +1,7 @@
 #include <stdio.h>
 #define PRINT_DEBUG 0
 
-__device__ float evaluate_individual(float *graph, int n_dim, int *individual){
+__device__ float evaluate_individual(const float *graph, int n_dim, int *individual){
 	float cost =0;	
 
 	for(int t=0; t<n_dim-1; ++t){

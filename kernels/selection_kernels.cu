@@ -2,7 +2,7 @@
 
 __global__ void evaluate_kernel(	int *offspring,  
 					int n_dim, 
-					float *graph,
+					const float *graph,
 					float *fitness,
 					int *auxiliary)
 {
