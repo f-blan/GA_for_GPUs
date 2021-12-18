@@ -4,7 +4,7 @@
 #include <float.h>
 #include "utils.h"
 #include "device_utils.h"
-#include "kernels.h"
+#include "main_utils.cu"
 #include "main.h"
 
 #define PRINT_SUMMARY 1
@@ -15,39 +15,6 @@
 #define PRINT_WORST 1
 
 
-int init_population(int * pop,curandGenerator_t gen, int n_dim, int population_dim){
-	
-	unsigned int * rands;
-
-	
-	CUDA_CALL(cudaMalloc((void **) &rands, POPULATION_SIZE*N_NODES*sizeof(unsigned int)));
-	
-	curandGenerate(gen, (unsigned int *) rands, POPULATION_SIZE*N_NODES*sizeof(unsigned int));
-	
-	cudaDeviceProp prop;
-	cudaGetDeviceProperties(&prop,0);
-	
- 
-        dim3 threads(32,prop.maxThreadsDim[0]/32,1);
-	dim3 blocks(ceil(POPULATION_SIZE/prop.maxThreadsDim[0]),1,1); 
-	if(POPULATION_SIZE< prop.maxThreadsDim[0]){ 
-		threads.y = POPULATION_SIZE/32;
-		blocks.x = 1;
-	}
-        if(population_dim<32 ){
-                threads.x = population_dim;
-        }
-
-	
-	
-	init_pop_s<<<blocks, threads>>>(pop, population_dim, n_dim, rands);
-	cudaDeviceSynchronize();
-	
-	
-	cudaFree(rands);
-	return cudaSuccess;
-
-}
 
 int main(){
 
