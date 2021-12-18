@@ -177,7 +177,18 @@ void thrust_shuffle(int *pop,int * copy, int *positions, curandGenerator_t gen, 
 	swap_with_positions<<<blocks, threads>>>(  copy, pop, positions, n_dim, population_dim);
 }
 
+__global__ void swap_best(int *population, float * fitness, int best_pos, int *global_best_sol, float *global_best_fit){
+	
+	int tid = threadIdx.x;
+	if(fitness[best_pos] < global_best_fit[0]){
+		global_best_sol[tid] = population[best_pos*N_NODES + tid];
+		if(tid ==0){
+			global_best_fit[0] = fitness[best_pos];
+		}
+	}
 
+
+}
 
 
 

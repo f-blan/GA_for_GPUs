@@ -11,7 +11,7 @@
 
 #define COMPILE_SHARED 1	//static shared memory size gives compilation errors even when shared memory is not used
 #define USE_ISLAND_SELECTION 0
-#define USE_ISLAND_GENERATION 0
+#define USE_ISLAND_GENERATION 1
 
 
 #define CUDA_CALL(x) do{ if((x) != cudaSuccess){ \

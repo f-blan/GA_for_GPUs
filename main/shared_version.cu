@@ -101,10 +101,16 @@ int main(void){
 	printf("operation on offspring will be launched on %d blocks with dim (%d, %d)\n", blocksS.x, threadsS.x,threadsS.y);
 
 	//support variables
-	int *global_best = (int*) malloc(N_NODES*sizeof(int));
-	int *current_best = (int*) malloc(N_NODES*sizeof(int));
+	int *global_best_sol = (int*) malloc(N_NODES*sizeof(int));
 	float best_fitness = FLT_MAX;
-	float current_fitness;
+	float current_fitness;	
+
+	int *d_global_best_sol;
+	float *d_best_fitness;
+	CUDA_CALL(cudaMalloc((void **) &d_global_best_sol, N_NODES*sizeof(int)));
+	CUDA_CALL(cudaMalloc((void **) &d_best_fitness, sizeof(float)));
+	cudaMemcpy( d_best_fitness, &best_fitness, sizeof(float), cudaMemcpyHostToDevice);	
+
 	float fitnesses[N_ITERATIONS];
 	int curr_pos;
 
@@ -146,6 +152,7 @@ int main(void){
 							N_NODES,
 							d_fitness
 							);
+		curr_pos = scan_best(d_fitness, POPULATION_SIZE);
 #else
 		const_selection(d_offspring,
 				d_population,
@@ -158,6 +165,7 @@ int main(void){
 				blocksS,
 				threadsP,
 				blocksP);
+		curr_pos = 0;
 #endif
 
 
@@ -169,34 +177,23 @@ int main(void){
 		cudaDeviceSynchronize();
 		printf("%d) printing next gen:\n", t);
 		print_popfit(d_population, d_fitness, POPULATION_SIZE);
-#endif		
-		
-		
-	
-		//fetch the best of the best
-		//curr_pos = scan_best(d_fitness, POPULATION_SIZE);
-		curr_pos = 0;
-
-#if DEBUG
 		printf("%d) best pos is %d\n",t, curr_pos);
 #endif			
 	
-		//record best solution
-		cudaMemcpy( current_best, d_population + curr_pos*N_NODES, N_NODES*sizeof(int), cudaMemcpyDeviceToHost);
+		//swap if better than global best
+		swap_best<<<1, N_NODES>>>(	d_population, 
+						d_fitness, 
+						curr_pos, 
+						d_global_best_sol, 
+						d_best_fitness);
+
 		cudaMemcpy( &current_fitness, d_fitness+ curr_pos, sizeof(float), cudaMemcpyDeviceToHost);
+		fitnesses[t] = current_fitness;
 #if PRINT_MAIN_LOOP		
 		printf("it %d: currently found fitness is %.2f\n", t, current_fitness);
 #endif
 		fitnesses[t] = current_fitness;
-		if(current_fitness<best_fitness){
-#if PRINT_MAIN_LOOP
-			printf("it %d: improvement found!\n", t);
-#endif
-			best_fitness = current_fitness;
-			for(int s=0; s<N_NODES; ++s){
-				global_best[s] = current_best[s];
-			}
-		} 
+		
 
 		//shuffle
 		thrust_shuffle(d_population, d_offspring, d_auxiliary, gen, d_shuffle_rands, N_NODES, POPULATION_SIZE);
@@ -232,11 +229,12 @@ int main(void){
 	}
 	printf("\n");
 #endif
-	
+	cudaMemcpy( global_best_sol, d_global_best_sol, N_NODES*sizeof(int), cudaMemcpyDeviceToHost);
+	cudaMemcpy( &best_fitness, d_best_fitness, sizeof(float), cudaMemcpyDeviceToHost);
 	printf("best solution found has path length %.2f\n", best_fitness);
 
 	for(int t=0; t<N_NODES; ++t){
-		printf("%d ->", global_best[t]);
+		printf("%d ->", global_best_sol[t]);
 	}
 	printf("\n");
 
@@ -252,13 +250,15 @@ int main(void){
 	cudaEventDestroy(stop);
 		
 	free(vec_graph);
-	free(global_best);
-	free(current_best);
+	free(global_best_sol);
+	
 	cudaFree(d_population);
 	cudaFree(d_offspring);
 	cudaFree(d_shuffle_rands);
 	cudaFree(d_genetic_rands);
 	cudaFree(d_auxiliary);
+	cudaFree(d_global_best_sol);
+	cudaFree(d_best_fitness);
 
 	cudaDeviceReset();
 }
