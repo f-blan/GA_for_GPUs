@@ -30,6 +30,10 @@ __device__ void swap_mutation(int *vec, int n_dim, unsigned int* random_nums){
 	*/
 	unsigned int index1 = random_nums[0]%n_dim;
 	unsigned int index2 = random_nums[1]%n_dim;
+
+#if DEBUG_PRINT
+	printf("randomicity through %d, %d, i1: %d, i2: %d\n", random_nums[0], random_nums[1], index1, index2);
+#endif
 	
 	int tmp = vec[index1];
 	vec[index1] = vec[index2];
@@ -49,6 +53,10 @@ __device__ void inversion_mutation(int *vec, int n_dim, unsigned int* random_num
 	
 	bool go = index1<index2; 
 	
+#if DEBUG_PRINT
+	printf("randomicity through %d, %d, i1: %d, i2: %d\n", random_nums[0], random_nums[1], index1, index2);
+#endif
+
 	while (go==(index1<index2)){
 		int tmp = vec[index1];
 		vec[index1] = vec[index2];
@@ -85,13 +93,13 @@ __device__ void cycle_crossover(	int *parent1,
 	unsigned int index1 = random_nums[1]%n_dim;
 	unsigned int index2 = random_nums[2]%n_dim;
 
-#if DEBUG_PRINT
-	printf("function init: p2_i %d, i1 %d, i2 %d\n", p2_i, index1, index2);
-#endif
 
 	//make sure that the whole warp is not using the same parent2 to generate offspring
-	p2_i = (p2_i + p1_i)%population_dim;
+	p2_i = (p2_i + ((p1_i*100)/17) + 1)%population_dim;
 
+#if DEBUG_PRINT
+	printf("function init: p2_i %d, p1_i %d, i1 %d, i2 %d\n", p2_i, p1_i, index1, index2);
+#endif
 	
 	//make sure index1 <= index2
 	index1 = (index1>index2 ? index2 : index1);
