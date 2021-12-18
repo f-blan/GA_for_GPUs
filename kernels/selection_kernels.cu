@@ -9,7 +9,7 @@ __global__ void naive_selection(	int *offspring,
 					float *fitness,
 					int *auxiliary)
 {
-	unsigned int tid = blockIdx.x*(blockDim.x*blockDim.y) + threadIdx.y*32+ threadIdx.x;
+	unsigned int tid = blockIdx.x*(blockDim.x*blockDim.y) + threadIdx.y*blockDim.x+ threadIdx.x;
 	
 	//evaluate each child
 	fitness[tid] = evaluate_individual(graph, n_dim, offspring + tid);

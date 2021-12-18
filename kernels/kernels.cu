@@ -1,46 +1,8 @@
 #include <stdio.h>
 
 #define SWAP_ITERATIONS 2
-#define DEBUG_PRINT 0
+#define DEBUG_PRINT 1
 
-//simple function to initialize the population pseudo randomly
-__global__ void init_pop(int *pop, int pop_dim, int n_dim, unsigned int *random_nums, int r_dim){
-
-	int tid = blockIdx.x*(blockDim.x*blockDim.y) + threadIdx.y*32+ threadIdx.x;
-
-	//pseudo random initialization based on tid + random_nums
-	for(int t =0; t<n_dim; ++t)
-		pop[tid*n_dim + t] = t;
-
-#if DEBUG_PRINT
-	printf("thread %d taking care of pos %d\nRandom used: %d - %d - %d - %d\n"
-	, tid, tid*n_dim, random_nums[tid]);
-#endif	
-	
-	unsigned int random_i = tid;
-	for(int t = 0; t< SWAP_ITERATIONS; ++t){
-		int random = random_nums[random_i];
-		for(int s = 0; s<n_dim-1; ++s){
-			if(random & 1){
-				//swap				
-				int tmp =  pop[tid*n_dim +s +1];
-				pop[tid*n_dim +s +1] = pop[tid*n_dim + s];
-				pop[tid*n_dim +s] = tmp;
-			}
-			random << 1;
-		}
-		if(random_nums[random_i] & 1){
-			//swap				
-			int tmp =  pop[tid*n_dim +n_dim-1];
-			pop[tid*n_dim +n_dim -1] = pop[tid*n_dim+ 0];
-			pop[tid*n_dim + 0] = tmp;
-		}
-		//random_i = (random_i + 1)%r_dim; 
-	}
-#if DEBUG_PRINT
-	printf("thread %d finished the job, %d\n", tid, pop[tid*n_dim + 5]);
-#endif	
-}
 
 
 //simple function to initialize the population pseudo randomly
@@ -49,7 +11,7 @@ __global__ void init_pop(int *pop, int pop_dim, int n_dim, unsigned int *random_
 //on the individual
 __global__ void init_pop_s(int *pop, int pop_dim, int n_dim, unsigned int *random_nums){
 
-	int tid = blockIdx.x*(blockDim.x*blockDim.y) + threadIdx.y*32+ threadIdx.x;
+	int tid = blockIdx.x*(blockDim.x*blockDim.y) + threadIdx.y*blockDim.x+ threadIdx.x;
 
 	//pseudo random initialization based on tid + random_nums
 	for(int t =0; t<n_dim; ++t)
@@ -84,6 +46,54 @@ __global__ void init_pop_s(int *pop, int pop_dim, int n_dim, unsigned int *rando
 		printf("\n");
 	}
 #endif	
+}
+
+//simple shuffle algorithm
+
+__global__ void shuffle(int *population,int*out, int population_dim, int n_dim, int*auxiliary, unsigned int *rands){
+	
+	unsigned int tid = blockIdx.x*(blockDim.x*blockDim.y) + threadIdx.y*blockDim.x+ threadIdx.x;	
+	
+	unsigned int tid_idx,tmp;
+	unsigned int d_0, d_1;
+	unsigned int offset = 0;
+	unsigned int tid_max = (population_dim -1);
+	int i;
+	auxiliary[tid] = tid;
+
+#if DEBUG_PRINT
+	printf("tid: %d, rand: %10u\n", tid, rands[tid] );
+#endif
+
+	__syncthreads();
+	//sort the children
+	for(i = 0; i< population_dim; ++i){
+		tid_idx = (tid*2) + offset;
+		if(tid_idx < tid_max){
+			d_0 = rands[tid_idx];
+			d_1 = rands[tid_idx + 1];
+			if(d_0 < d_1){
+				rands[tid_idx] = d_1;
+				rands[tid_idx+1] = d_0;
+				
+				tmp = auxiliary[tid_idx];
+				auxiliary[tid_idx] = auxiliary[tid_idx+1];
+				auxiliary[tid_idx+1] = tmp;
+
+			}
+		}
+		if(offset == 0){
+			offset = 1;
+		}else{
+			offset = 0;
+		}
+		__syncthreads();
+	}
+	int val;
+	for(i=0; i<n_dim; ++i){
+		
+		out[tid*n_dim + i]=population[n_dim*auxiliary[tid] + i];
+	}
 }
 
 

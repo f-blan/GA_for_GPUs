@@ -10,7 +10,7 @@ __global__ void naive_generation(int* population,
 				unsigned int *random_nums)
 {
 	
-	unsigned int tid = blockIdx.x*(blockDim.x*blockDim.y) + threadIdx.y*32+ threadIdx.x;
+	unsigned int tid = blockIdx.x*(blockDim.x*blockDim.y) + threadIdx.y*blockDim.x+ threadIdx.x;
 #if DEBUG_PRINT
 	printf("tid: %d working from position %d, rand: %d\n", tid, tid*n_dim*offspring_factor,(int) random_nums[0] );
 #endif
