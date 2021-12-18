@@ -74,6 +74,16 @@ float **graph_to_mat(float **g, int n_nodes){
 	return m;
 	
 }
+float *mat_to_vec(float **m, int n_nodes){
+	float *v = (float *) malloc(n_nodes*n_nodes*sizeof(float));
+	
+	for(int t =0; t<n_nodes; ++t){
+		for(int s =0; s<n_nodes; ++s){
+			v[t*n_nodes + s] = m[t][s];
+		}
+	}
+	return v;
+}
 
 void print_mat(float **m, int dim){
 	for(int t =0; t<dim; ++t){
