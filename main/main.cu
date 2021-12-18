@@ -9,13 +9,13 @@
 
 
 void test_utils();
-void test_gen_ops();
+void test_mutation_ops();
 void test_curand();
 
 int main(void){
 	//test_utils();
-	//test_gen_ops();
-	test_curand();
+	test_mutation_ops();
+	//test_curand();
 
 	return 0;
 }
@@ -28,9 +28,34 @@ void test_utils(){
 	//print_mat(m, N_NODES);
 }
 
-void test_gen_ops(){
+void test_mutation_ops(){
 	int vec[] = {0,1,2,3,4};
-	swap_mutation(vec);
+	int rands[4];
+	printf("rands\n");
+	for(int t = 0; t< 4; ++t){
+		rands[t] = rand();
+		printf("%d ", rands[t]);
+	}
+	printf("\n");
+	
+	swap_mutation(vec, 5, rands);
+	printf("swap\n");
+	for(int t = 0; t< 5; ++t){
+		printf("%d ", vec[t]);
+		vec[t] = t;
+	}
+	printf("\n");
+	
+	int rands2[] = {0,4,1,2,3}; 
+	inversion_mutation(vec, 5, rands2);
+	printf("invert\n");
+	for(int t = 0; t< 5; ++t){
+		printf("%d ", vec[t]);
+		vec[t] = t;
+	}
+	printf("\n");
+
+	
 
 }
 
