@@ -1,9 +1,26 @@
 #include <curand.h>
 #include <stdbool.h>
 
+
 #define DEBUG_PRINT 1
 
-void swap_mutation(int *vec, int n_dim, int* random_nums){
+/*
+	some infos on the used data:
+
+		- 	the vector storing the main individual from which offspring is generated (here called
+			either vec or parent1) is a portion of vector of global or shared memory that represents
+			the output vector of the kernel. Before these calls, it is initialized to the corresponding values 
+			of the actual parent stored in the input vector of the kernel, hence why it can be modified in place
+			without compromising the input population.
+
+		-	random_nums represents a portion (of size 3) of a larger array made of random numbers. 
+			There are 3*OFFSPRING_FACTOR random numbers per warp, so that at each call the whole warp is using the
+			same random numbers (instruction flow depends on them), and so that the same warp uses a different set
+			of random numbers between different calls (that amounts to OFFSPRING_SIZE times, otherwise increasing
+			OFFSPRING_SIZE would just generate the same child but replicated).
+*/
+
+void swap_mutation(int *vec, int n_dim, unsigned int* random_nums){
 	/*
 		mutation genetic operator: two random indexes are chosen, 
 		and their content are swapped
@@ -11,22 +28,22 @@ void swap_mutation(int *vec, int n_dim, int* random_nums){
 		random_nums is a small array containing random numbers,
 		which are needed to introduce some randomicity
 	*/
-	int index1 = random_nums[0]%n_dim;
-	int index2 = random_nums[1]%n_dim;
+	unsigned int index1 = random_nums[0]%n_dim;
+	unsigned int index2 = random_nums[1]%n_dim;
 	
 	int tmp = vec[index1];
 	vec[index1] = vec[index2];
 	vec[index2] = tmp;
 }
 
-void inversion_mutation(int *vec, int n_dim, int* random_nums){
+void inversion_mutation(int *vec, int n_dim, unsigned int* random_nums){
 	/*
 		mutation genetic operator: two random indexes are chosen, 
 		all the content between them is inverted
 		
 	*/
-	int index1 = random_nums[0]%n_dim;
-	int index2 = random_nums[1]%n_dim;
+	unsigned int index1 = random_nums[0]%n_dim;
+	unsigned int index2 = random_nums[1]%n_dim;
 	
 	int incr = (index1>index2 ? -1 : 1);
 	
@@ -41,7 +58,7 @@ void inversion_mutation(int *vec, int n_dim, int* random_nums){
 	}
 }
 
-void cycle_crossover(int *parent1, int *population, int population_dim, int n_dim, int *random_nums, int p1_i){
+void cycle_crossover(int *parent1, int *population, int population_dim, int n_dim,unsigned int *random_nums, int p1_i){
 	/*
 		recombination genetic operator: two random indexes are chosen,
 		everything between them is kept, the rest of the array is reconstructed
@@ -58,9 +75,9 @@ void cycle_crossover(int *parent1, int *population, int population_dim, int n_di
 	*/
 	
 	//find second parent and random indexes
-	int p2_i = random_nums[0] % (population_dim*n_dim);
-	int index1 = random_nums[1]%n_dim;
-	int index2 = random_nums[2]%n_dim;
+	unsigned int p2_i = random_nums[0] % (population_dim*n_dim);
+	unsigned int index1 = random_nums[1]%n_dim;
+	unsigned int index2 = random_nums[2]%n_dim;
 
 #if DEBUG_PRINT
 	printf("function init: p2_i %d, i1 %d, i2 %d\n", p2_i, index1, index2);
@@ -69,10 +86,6 @@ void cycle_crossover(int *parent1, int *population, int population_dim, int n_di
 	//make sure that the whole warp is not using the same parent2 to generate offspring
 	p2_i = (p2_i + p1_i)%population_dim;
 
-	//make sure that the second parent is not the exactly the first parent
-	if(p2_i == p1_i){
-		p2_i = (p1_i == 0 ? p1_i+1 : p1_i-1);
-	}
 	
 	//make sure index1 <= index2
 	index1 = (index1>index2 ? index2 : index1);

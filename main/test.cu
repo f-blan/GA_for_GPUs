@@ -15,7 +15,7 @@ void test_cycle_CO();
 
 int main(void){
 	//test_utils();
-	//test_mutation_ops();
+	test_mutation_ops();
 	//test_curand();
 	test_cycle_CO();
 
@@ -28,7 +28,7 @@ void test_cycle_CO(){
 			0,1,2,3,4,5,
 			1,2,3,4,5,0			
 		};
-	int rands[] = { 1, 1, 4 };
+	unsigned int rands[] = { 1, 1, 4 };
 	cycle_crossover(vec, vec, 2, size, rands, 0);
 
 	for (int t = 0; t<2; ++t){
@@ -42,7 +42,7 @@ void test_cycle_CO(){
 			0,1,2,3,4,5,
 			1,2,3,4,5,0			
 		};
-	int rands2[] = { 1, 1, 3 };
+	unsigned int rands2[] = { 1, 1, 3 };
 	cycle_crossover(vec2, vec2, 2, size, rands2, 0);
 
 	for (int t = 0; t<2; ++t){
@@ -56,7 +56,7 @@ void test_cycle_CO(){
 			0,1,2,3,4,5,
 			1,2,3,4,5,0			
 		};
-	int rands3[] = { 1, 0, 3 };
+	unsigned int rands3[] = { 1, 0, 3 };
 	cycle_crossover(vec3, vec3, 2, size, rands3, 0);
 
 	for (int t = 0; t<2; ++t){
@@ -77,7 +77,7 @@ void test_utils(){
 
 void test_mutation_ops(){
 	int vec[] = {0,1,2,3,4};
-	int rands[4];
+	unsigned int rands[4];
 	printf("rands\n");
 	for(int t = 0; t< 4; ++t){
 		rands[t] = rand();
@@ -93,7 +93,7 @@ void test_mutation_ops(){
 	}
 	printf("\n");
 	
-	int rands2[] = {4,0,1,2,3}; 
+	unsigned int rands2[] = {4,0,1,2,3}; 
 	inversion_mutation(vec, 5, rands2);
 	printf("invert\n");
 	for(int t = 0; t< 5; ++t){
@@ -113,10 +113,10 @@ void test_curand(){
 
 	curandCreateGenerator(&gen, CURAND_RNG_PSEUDO_DEFAULT);
 
-	int *d_r; 
+	unsigned int *d_r; 
 	cudaMalloc((void **) &d_r, size*sizeof(int));
 
-	int *r =(int *) malloc(size*sizeof(int));
+	unsigned int *r =(unsigned int *) malloc(size*sizeof(int));
 
 	curandSetPseudoRandomGeneratorSeed(gen, 1234);
 
@@ -125,7 +125,7 @@ void test_curand(){
 	cudaMemcpy(r, d_r, size*sizeof(int), cudaMemcpyDeviceToHost);
 	
 	for(int i =0; i<size; ++i){
-		printf("%d ", r[i]);
+		printf("%u ", r[i]%size);
 	}
 	printf("\n");
 	
