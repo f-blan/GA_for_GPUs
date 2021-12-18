@@ -90,6 +90,13 @@ int main(void){
 		threadsS.x = POPULATION_SIZE*OFFSPRING_FACTOR;
 	}
 
+	if(THREADS_PER_BLOCK < 32){
+		threadsS.x = THREADS_PER_BLOCK;
+		threadsS.y = 1;
+		threadsP.x = THREADS_PER_BLOCK;
+		threadsP.y = 1;
+	}
+
 	printf("operation on population will be launched on %d blocks with dim (%d, %d)\n", blocksP.x, threadsP.x,threadsP.y);
 	printf("operation on offspring will be launched on %d blocks with dim (%d, %d)\n", blocksS.x, threadsS.x,threadsS.y);
 
@@ -122,10 +129,7 @@ int main(void){
 		printf("it %d: generating the offspring\n", t);
 #endif
 		naive_generation<<<blocksP, threadsP>>>(d_population, 
-							POPULATION_SIZE, 
-							N_NODES, 
 							d_offspring, 
-							OFFSPRING_FACTOR, 
 							d_genetic_rands);
 	
 #if PRINT_MAIN_LOOP		
@@ -203,17 +207,12 @@ int main(void){
 	}
 	printf("\n");
 
-#if PROVIDE_SOL
-	int sol[] = {0,2,6,4,3,5,1,7};
-	printf("best solution computed has lengths %.2f\n",evaluate_individual_host(vec_graph,N_NODES,sol));
-	printf("best solution host has lengths %.2f\n",evaluate_individual_host(vec_graph,N_NODES,global_best));
-#endif
-
 	cudaEventDestroy(start);
 	cudaEventDestroy(stop);
 		
 	free(vec_graph);
 	free(global_best_sol);
+	curandDestroyGenerator(gen);
 	
 	cudaFree(d_population);
 	cudaFree(d_offspring);

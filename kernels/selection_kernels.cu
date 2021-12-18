@@ -75,6 +75,8 @@ void const_selection(	int *offspring,
 
 }
 
+
+//maybe storing the offspring into the shared memory was unnecessary
 __global__ void island_selection(	int *offspring,
 					int *population,  
 					int n_dim,
@@ -135,7 +137,6 @@ __global__ void island_selection(	int *offspring,
 	}
 	//only the best within the block get copied back into next generation
 	if(tid_b < THREADS_PER_BLOCK/OFFSPRING_FACTOR){
-		//printf("tid: %d entered selection, storing to %d %.2f\n", tid, blockIdx.x*(THREADS_PER_BLOCK/OFFSPRING_FACTOR) + tid_b, s_fit[tid_b]);
 		tid_idx = s[tid_b];
 		for(t=0; t<N_NODES; ++t){
 			population[blockIdx.x*(THREADS_PER_BLOCK/OFFSPRING_FACTOR) + tid_b*N_NODES +t] = s_off[tid_idx*N_NODES + t];

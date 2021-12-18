@@ -3,22 +3,20 @@
 #define INVERT_FACTOR 2
 #define RECOMBINATION_FACTOR 6
 
-__global__ void naive_generation(int* population, 
-				int population_dim, 
-				int n_dim, int *offspring,
-				int offspring_factor,
+__global__ void naive_generation(int* population,  
+				int *offspring,
 				unsigned int *random_nums)
 {
 	
 	unsigned int tid = blockIdx.x*(blockDim.x*blockDim.y) + threadIdx.y*blockDim.x+ threadIdx.x;
 #if DEBUG_PRINT
-	printf("tid: %d working from position %d, rand: %d\n", tid, tid*n_dim*offspring_factor,(int) random_nums[0] );
+	printf("tid: %d working from position %d, rand: %d\n", tid, tid*N_NODES*OFFSPRING_FACTOR,(int) random_nums[0] );
 #endif
 	
 	//copy the parent in all children positions in the output vector
 	unsigned int t;
-	for(t = 0; t<n_dim*offspring_factor; ++t){
-		offspring[tid*n_dim*offspring_factor + t] = population[tid*n_dim +t%n_dim];
+	for(t = 0; t<N_NODES*OFFSPRING_FACTOR; ++t){
+		offspring[tid*N_NODES*OFFSPRING_FACTOR + t] = population[tid*N_NODES +t%N_NODES];
 	}
 
 
@@ -26,20 +24,20 @@ __global__ void naive_generation(int* population,
 #if DEBUG_PRINT
 		printf("thread from warp: %d performing swap\n",threadIdx.y);
 #endif		
-		for(t=0; t< offspring_factor; ++t){
+		for(t=0; t< OFFSPRING_FACTOR; ++t){
 			
-			swap_mutation(	offspring+(tid*n_dim*offspring_factor +n_dim*t), 
-					n_dim, 
+			swap_mutation(	offspring+(tid*N_NODES*OFFSPRING_FACTOR +N_NODES*t), 
+					N_NODES, 
 					random_nums + ((tid/32)*3 + 3*t));
 		}
 	}else if(( blockIdx.x*blockDim.y + (int)threadIdx.y)%RECOMBINATION_FACTOR <= INVERT_FACTOR){
 #if DEBUG_PRINT
 		printf("thread from warp: %d performing inversion\n", threadIdx.y);
 #endif	
-		for(t=0; t< offspring_factor; ++t){
+		for(t=0; t< OFFSPRING_FACTOR; ++t){
 			
-			inversion_mutation(	offspring+(tid*n_dim*offspring_factor +n_dim*t), 
-						n_dim, 
+			inversion_mutation(	offspring+(tid*N_NODES*OFFSPRING_FACTOR +N_NODES*t), 
+						N_NODES, 
 						random_nums + ((tid/32)*3 + 3*t));
 
 		}
@@ -47,12 +45,12 @@ __global__ void naive_generation(int* population,
 #if DEBUG_PRINT
 		printf("thread from warp: %d performing cycle crossover\n", threadIdx.y);
 #endif
-		for(t=0; t< offspring_factor; ++t){
+		for(t=0; t< OFFSPRING_FACTOR; ++t){
 			
-			cycle_crossover(	offspring+(tid*n_dim*offspring_factor +n_dim*t), 
+			cycle_crossover(	offspring+(tid*N_NODES*OFFSPRING_FACTOR +N_NODES*t), 
 						population,
-						population_dim,
-						n_dim, 
+						POPULATION_SIZE,
+						N_NODES, 
 						random_nums + ((tid/32)*3 + 3*t),
 						tid);
 		}
@@ -63,7 +61,7 @@ __global__ void naive_generation(int* population,
 
 
 __global__ void shared_generation(	int* population, 
-					int n_dim, int *offspring,
+					int *offspring,
 					unsigned int *random_nums)
 {
 #if COMPILE_SHARED

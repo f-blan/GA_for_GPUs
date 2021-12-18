@@ -10,9 +10,6 @@
 #endif
 
 #define PRINT_SUMMARY 1
-#define DEBUG 0
-#define DEBUG_BLOCK 0
-#define PROVIDE_SOL 0
 #define PRINT_MAIN_LOOP 0
 #define PRINT_WORST 1
 
@@ -120,10 +117,7 @@ int main(void){
 	CUDA_CALL(cudaEventCreate(&start));
 	CUDA_CALL(cudaEventCreate(&stop));
 	CUDA_CALL(cudaEventRecord(start, 0));
-#if DEBUG
-	printf("printing init:\n");
-	print_pop(d_population, POPULATION_SIZE);
-#endif
+
 	//main loop
 	printf("running main loop\n");
 	for(int t=0; t<N_ITERATIONS; ++t){
@@ -132,15 +126,10 @@ int main(void){
 #if PRINT_MAIN_LOOP
 		printf("it %d: generating the offspring\n", t);
 #endif
-		shared_generation<<<blocksP, threadsP>>>(d_population, 
-							N_NODES, 
+		shared_generation<<<blocksP, threadsP>>>(d_population,  
 							d_offspring,  
 							d_genetic_rands);
 		
-#if DEBUG
-		printf("%d) printing offsrping:\n", t);
-		print_pop(d_offspring, POPULATION_SIZE*OFFSPRING_FACTOR);
-#endif
 
 #if PRINT_MAIN_LOOP		
 		printf("it %d: applying selection\n", t);
@@ -168,17 +157,7 @@ int main(void){
 		curr_pos = 0;
 #endif
 
-
-#if DEBUG
 		
-		
-
-
-		cudaDeviceSynchronize();
-		printf("%d) printing next gen:\n", t);
-		print_popfit(d_population, d_fitness, POPULATION_SIZE);
-		printf("%d) best pos is %d\n",t, curr_pos);
-#endif			
 	
 		//swap if better than global best
 		swap_best<<<1, N_NODES>>>(	d_population, 
@@ -236,16 +215,10 @@ int main(void){
 	}
 	printf("\n");
 
-#if PROVIDE_SOL
-	int sol[] = {0,2,6,4,3,5,1,7};
-	printf("best solution computed has lengths %.2f\n",evaluate_individual_host(vec_graph,N_NODES,sol));
-	printf("best solution host has lengths %.2f\n",evaluate_individual_host(vec_graph,N_NODES,global_best));
-#endif
-
-	
-
 	cudaEventDestroy(start);
 	cudaEventDestroy(stop);
+	
+	curandDestroyGenerator(gen);
 		
 	free(vec_graph);
 	free(global_best_sol);

@@ -10,9 +10,6 @@
 #endif
 
 #define PRINT_SUMMARY 1
-#define DEBUG 0
-#define DEBUG_BLOCK 0
-#define PROVIDE_SOL 0
 #define PRINT_MAIN_LOOP 0
 #define PRINT_WORST 1
 
@@ -107,14 +104,13 @@ int main(){
 	if(POPULATION_SIZE*OFFSPRING_FACTOR<32 ){
 		threadsS.x = POPULATION_SIZE*OFFSPRING_FACTOR;
 	}
-#if DEBUG_BLOCK
-	blocksP.x *=2;
-	threadsP.y /=2;
-	if(threadsP.y ==0) threadsP.y = 1;
-	blocksS.x *=2;
-	threadsS.y /=2;
-	if(threadsS.y ==0) threadsS.y = 1;
-#endif
+	if(THREADS_PER_BLOCK < 32){
+		threadsS.x = THREADS_PER_BLOCK;
+		threadsS.y = 1;
+		threadsP.x = THREADS_PER_BLOCK;
+		threadsP.y = 1;
+	}
+
 	printf("operation on population will be launched on %d blocks with dim (%d, %d)\n", blocksP.x, threadsP.x,threadsP.y);
 	printf("operation on offspring will be launched on %d blocks with dim (%d, %d)\n", blocksS.x, threadsS.x,threadsS.y);
 
@@ -145,10 +141,7 @@ int main(){
 		printf("it %d: generating the offspring\n", t);
 #endif
 		naive_generation<<<blocksP, threadsP>>>(d_population, 
-							POPULATION_SIZE, 
-							N_NODES, 
 							d_offspring, 
-							OFFSPRING_FACTOR, 
 							d_genetic_rands);
 	
 #if PRINT_MAIN_LOOP		
@@ -167,16 +160,6 @@ int main(){
 				threadsP,
 				blocksP);
 
-#if DEBUG
-		cudaMemcpy( pop, d_population, N_NODES*POPULATION_SIZE*sizeof(int), cudaMemcpyDeviceToHost);
-
-		for(int k=0; k<POPULATION_SIZE; ++k){
-			for(int s =0; s<N_NODES; ++s){
-				printf("%d ", pop[k*N_NODES + s]);
-			}
-			printf("fitness: %.2f\n", evaluate_individual_host(vec_graph,N_NODES,pop+k*N_NODES));
-		}
-#endif	
 
 		//swap if better than global best
 		swap_best<<<1, N_NODES>>>(	d_population, 
@@ -234,11 +217,6 @@ int main(){
 	}
 	printf("\n");
 
-#if PROVIDE_SOL
-	int sol[] = {0,2,6,4,3,5,1,7};
-	printf("best solution computed has lengths %.2f\n",evaluate_individual_host(vec_graph,N_NODES,sol));
-	printf("best solution host has lengths %.2f\n",evaluate_individual_host(vec_graph,N_NODES,global_best));
-#endif
 
 	cudaEventDestroy(start);
 	cudaEventDestroy(stop);
@@ -253,6 +231,8 @@ int main(){
 	cudaFree(d_auxiliary);
 	cudaFree(d_global_best_sol);
 	cudaFree(d_best_fitness);
+
+	curandDestroyGenerator(gen);
 #if DEBUG
 	free(pop);
 	free(off);
