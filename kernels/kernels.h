@@ -1,3 +1,7 @@
+
+#ifndef MAIN_H
+#include "main.h"
+#endif
 #include "kernels.cu"
 #include "generation_kernels.cu"
 #include "selection_kernels.cu"

@@ -5,7 +5,9 @@
 #include "utils.h"
 #include "device_utils.h"
 #include "main_utils.cu"
+#ifndef MAIN_H
 #include "main.h"
+#endif
 
 #define PRINT_SUMMARY 1
 #define DEBUG 0
@@ -217,6 +219,7 @@ int main(){
 	cudaMemcpy( worst, d_population+N_NODES*(POPULATION_SIZE-1), N_NODES*sizeof(int), cudaMemcpyDeviceToHost);
 	for(int t=0; t<N_NODES; ++t){
 		printf("%d ", worst[t]);
+		if(t%10 ==0) printf("\n");
 	}
 	printf("\n");
 #endif

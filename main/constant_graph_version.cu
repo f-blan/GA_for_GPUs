@@ -5,7 +5,9 @@
 #include "utils.h"
 #include "device_utils.h"
 #include "main_utils.cu"
+#ifndef MAIN_H
 #include "main.h"
+#endif
 
 #define PRINT_SUMMARY 1
 #define DEBUG 0
@@ -14,18 +16,19 @@
 #define PRINT_MAIN_LOOP 0
 #define PRINT_WORST 1
 
-__constant__ float const_graph[N_NODES*N_NODES];
 
 int main(void){
 	float **g = graph_generate(N_NODES);
 	print_graph(g, N_NODES);
 	float **m= graph_to_mat(g, N_NODES);
 	float *vec_graph = mat_to_vec(m, N_NODES);
+	
 
 	CUDA_CALL(cudaMemcpyToSymbol(const_graph, vec_graph, N_NODES*N_NODES*sizeof(float)));
 
 	free(g);
 	free(m);
+	
 
 	//allocate data arrays			DIM
 	int * d_population; 			//POPULATION_SIZE*N_NODES
@@ -60,6 +63,7 @@ int main(void){
 
 	
 	//initialize the data
+	printf("initializing population\n");
 	CUDA_CALL(init_population(d_population,gen, N_NODES, POPULATION_SIZE));
 
 	//kernel parameters
@@ -104,6 +108,7 @@ int main(void){
 	CUDA_CALL(cudaEventRecord(start, 0));
 
 	//main loop
+	printf("running main loop\n");
 	for(int t=0; t<N_ITERATIONS; ++t){
 		//generate random numbers for offspring generation
 		curandGenerate(gen, (unsigned int *) d_genetic_rands, n_warps*OFFSPRING_FACTOR*3*sizeof(unsigned int));
@@ -120,12 +125,11 @@ int main(void){
 #if PRINT_MAIN_LOOP		
 		printf("it %d: applying selection\n", t);
 #endif
-		naive_selection(d_offspring,
+		const_selection(d_offspring,
 				d_population,
 				N_NODES,
 				POPULATION_SIZE,
 				OFFSPRING_FACTOR,
-				const_graph,
 				d_fitness,
 				d_auxiliary,
 				threadsS,
@@ -171,6 +175,7 @@ int main(void){
 
 	for(int t=0; t<N_ITERATIONS; ++t){
 		printf("%.2f ->", fitnesses[t]);
+		if(t%10 ==0) printf("\n");
 	}
 	printf("\n");
 #endif
