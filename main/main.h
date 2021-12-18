@@ -10,6 +10,9 @@
 #define THREADS_PER_BLOCK 64	//maximum number of threads per block. Def: 64
 
 #define COMPILE_SHARED 1	//static shared memory size gives compilation errors even when shared memory is not used
+#define USE_ISLAND_SELECTION 0
+#define USE_ISLAND_GENERATION 0
+
 
 #define CUDA_CALL(x) do{ if((x) != cudaSuccess){ \
 	printf("Error at %s:%d\n", __FILE__, __LINE__); \

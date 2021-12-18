@@ -117,13 +117,22 @@ __global__ void shared_generation(	int* population,
 		printf("thread from warp: %d performing cycle crossover\n", threadIdx.y);
 #endif
 		for(t=0; t< OFFSPRING_FACTOR; ++t){
-			
+
+#if USE_ISLAND_GENERATION			
 			cycle_crossover(	s_off+(tid_b*N_NODES*OFFSPRING_FACTOR +N_NODES*t), 
 						population + blockDim.y*blockDim.x*blockIdx.x*N_NODES,
 						blockDim.x*blockDim.y,
 						N_NODES, 
 						random_nums + ((tid/32)*3 + 3*t),
 						tid);
+#else
+			cycle_crossover(	s_off+(tid_b*N_NODES*OFFSPRING_FACTOR +N_NODES*t), 
+						population,
+						POPULATION_SIZE,
+						N_NODES, 
+						random_nums + ((tid/32)*3 + 3*t),
+						tid);
+#endif
 		}
 	}
 	__syncthreads();

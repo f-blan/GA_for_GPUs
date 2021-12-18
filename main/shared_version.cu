@@ -15,7 +15,7 @@
 #define PROVIDE_SOL 0
 #define PRINT_MAIN_LOOP 0
 #define PRINT_WORST 1
-#define USE_ISLAND_SELECTION 0
+
 
 
 int main(void){
