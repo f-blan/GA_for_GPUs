@@ -28,6 +28,18 @@ int main(){
 
 	free(g);
 	free(m);
+	
+	//support variables
+	int *global_best_sol = (int*) malloc(N_NODES*sizeof(int));
+	float best_fitness = FLT_MAX;
+	float current_fitness;	
+	float fitnesses[N_ITERATIONS];
+
+	int *d_global_best_sol;
+	float *d_best_fitness;
+	CUDA_CALL(cudaMalloc((void **) &d_global_best_sol, N_NODES*sizeof(int)));
+	CUDA_CALL(cudaMalloc((void **) &d_best_fitness, sizeof(float)));
+	cudaMemcpy( d_best_fitness, &best_fitness, sizeof(float), cudaMemcpyHostToDevice);
 
 	//allocate data arrays			DIM
 	int * d_population; 			//POPULATION_SIZE*N_NODES
@@ -114,17 +126,6 @@ int main(){
 	printf("operation on population will be launched on %d blocks with dim (%d, %d)\n", blocksP.x, threadsP.x,threadsP.y);
 	printf("operation on offspring will be launched on %d blocks with dim (%d, %d)\n", blocksS.x, threadsS.x,threadsS.y);
 
-	//support variables
-	int *global_best_sol = (int*) malloc(N_NODES*sizeof(int));
-	float best_fitness = FLT_MAX;
-	float current_fitness;	
-	float fitnesses[N_ITERATIONS];
-
-	int *d_global_best_sol;
-	float *d_best_fitness;
-	CUDA_CALL(cudaMalloc((void **) &d_global_best_sol, N_NODES*sizeof(int)));
-	CUDA_CALL(cudaMalloc((void **) &d_best_fitness, sizeof(float)));
-	cudaMemcpy( d_best_fitness, &best_fitness, sizeof(float), cudaMemcpyHostToDevice);
 	
 	//use events for measuring performance
 	cudaEvent_t start, stop;

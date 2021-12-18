@@ -3,7 +3,7 @@
 
 #define MAIN_H
 
-#define N_NODES 48		//length of the hamiltonian cycle in nodes. Def: 60
+#define N_NODES 32		//length of the hamiltonian cycle in nodes. Def: 60
 #define OFFSPRING_FACTOR 2	//the number of children generated from each individual in the population. Def: 3
 #define POPULATION_SIZE 1024	//the maximum number of individuals in the population. Def: 1024
 #define N_ITERATIONS 500	//number of iterations of the algorithm. Def: 500
