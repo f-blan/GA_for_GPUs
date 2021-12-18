@@ -97,7 +97,6 @@ __global__ void island_selection(	int *offspring,
 		//printf("%d placed %d at pos %d\n", tid, offspring[tid*N_NODES+t], tid_b);
 		s_off[tid_b*N_NODES +t] = offspring[tid*N_NODES +t]; 
 	}
-	printf("%d writing to pos %u\n", tid_b, s + tid_b);
 	s[tid_b]= tid_b;
 	s_fit[tid_b] = evaluate_individual(const_graph, N_NODES, s_off + (tid_b*N_NODES));
 

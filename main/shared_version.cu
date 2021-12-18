@@ -10,11 +10,12 @@
 #endif
 
 #define PRINT_SUMMARY 1
-#define DEBUG 1
+#define DEBUG 0
 #define DEBUG_BLOCK 0
 #define PROVIDE_SOL 0
 #define PRINT_MAIN_LOOP 0
 #define PRINT_WORST 1
+#define USE_ISLAND_SELECTION 0
 
 
 int main(void){
@@ -92,6 +93,8 @@ int main(void){
 	if(THREADS_PER_BLOCK < 32){
 		threadsS.x = THREADS_PER_BLOCK;
 		threadsS.y = 1;
+		threadsP.x = THREADS_PER_BLOCK;
+		threadsP.y = 1;
 	}
 
 	printf("operation on population will be launched on %d blocks with dim (%d, %d)\n", blocksP.x, threadsP.x,threadsP.y);
@@ -127,29 +130,57 @@ int main(void){
 							N_NODES, 
 							d_offspring,  
 							d_genetic_rands);
+		
 #if DEBUG
 		printf("%d) printing offsrping:\n", t);
 		print_pop(d_offspring, POPULATION_SIZE*OFFSPRING_FACTOR);
 #endif
+
 #if PRINT_MAIN_LOOP		
 		printf("it %d: applying selection\n", t);
 #endif
+
+#if USE_ISLAND_SELECTION
 		island_selection<<<blocksS, threadsS>>>(d_offspring,
 							d_population,
 							N_NODES,
-							d_fitness);
+							d_fitness
+							);
+#else
+		const_selection(d_offspring,
+				d_population,
+				N_NODES,
+				POPULATION_SIZE,
+				OFFSPRING_FACTOR,
+				d_fitness,
+				d_auxiliary,
+				threadsS,
+				blocksS,
+				threadsP,
+				blocksP);
+#endif
+
+
 #if DEBUG
+		
+		
+
+
 		cudaDeviceSynchronize();
 		printf("%d) printing next gen:\n", t);
 		print_popfit(d_population, d_fitness, POPULATION_SIZE);
 #endif		
 		
 		
-		
+	
 		//fetch the best of the best
 		//curr_pos = scan_best(d_fitness, POPULATION_SIZE);
-		
-		
+		curr_pos = 0;
+
+#if DEBUG
+		printf("%d) best pos is %d\n",t, curr_pos);
+#endif			
+	
 		//record best solution
 		cudaMemcpy( current_best, d_population + curr_pos*N_NODES, N_NODES*sizeof(int), cudaMemcpyDeviceToHost);
 		cudaMemcpy( &current_fitness, d_fitness+ curr_pos, sizeof(float), cudaMemcpyDeviceToHost);
@@ -168,7 +199,7 @@ int main(void){
 		} 
 
 		//shuffle
-		//thrust_shuffle(d_population, d_offspring, d_auxiliary, gen, d_shuffle_rands, N_NODES, POPULATION_SIZE);
+		thrust_shuffle(d_population, d_offspring, d_auxiliary, gen, d_shuffle_rands, N_NODES, POPULATION_SIZE);
 				
 
 	}
@@ -215,6 +246,8 @@ int main(void){
 	printf("best solution host has lengths %.2f\n",evaluate_individual_host(vec_graph,N_NODES,global_best));
 #endif
 
+	
+
 	cudaEventDestroy(start);
 	cudaEventDestroy(stop);
 		
@@ -227,6 +260,6 @@ int main(void){
 	cudaFree(d_genetic_rands);
 	cudaFree(d_auxiliary);
 
-
+	cudaDeviceReset();
 }
 

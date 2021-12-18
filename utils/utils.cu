@@ -122,7 +122,7 @@ int scan_best	( float *fitness, int population_dim)
 	thrust::device_ptr<float> f_ptr = thrust::device_pointer_cast(fitness);
 
 	thrust::device_ptr<float> min_ptr = thrust::min_element(f_ptr, f_ptr+population_dim);
-	printf("pos: %d\n", &min_ptr[0] - &f_ptr[0]);
+	
 	return &min_ptr[0] - &f_ptr[0];
 
 }
