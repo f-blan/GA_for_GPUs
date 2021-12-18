@@ -22,11 +22,11 @@ void test_init(){
 	pop= (int*) malloc(POPULATION_SIZE*N_NODES*sizeof(int));
 	cudaMalloc( (void **) &d_pop, POPULATION_SIZE*N_NODES*sizeof(int) );
 
-	cudaMalloc((void **) &d_rands, POPULATION_SIZE*sizeof(unsigned int));
+	cudaMalloc((void **) &d_rands, POPULATION_SIZE*N_NODES*sizeof(unsigned int));
 	curandGenerator_t gen;
 	curandCreateGenerator(&gen, CURAND_RNG_PSEUDO_DEFAULT);
 	curandSetPseudoRandomGeneratorSeed(gen, 1234);
-	curandGenerate(gen, (unsigned int *) d_rands, POPULATION_SIZE*sizeof(unsigned int));
+	curandGenerate(gen, (unsigned int *) d_rands, POPULATION_SIZE*N_NODES*sizeof(unsigned int));
 
 	cudaDeviceProp prop;
 	cudaGetDeviceProperties(&prop,0);
@@ -41,7 +41,7 @@ void test_init(){
 
 	printf("launching with (%d, %d,%d) threads and %d blocks\n", 
 			threads.x, threads.y, threads.z, blocks.x);
-	init_pop<<<blocks, threads>>>(d_pop, POPULATION_SIZE, N_NODES, d_rands, (POPULATION_SIZE/32)*3);
+	init_pop_s<<<blocks, threads>>>(d_pop, POPULATION_SIZE, N_NODES, d_rands, (POPULATION_SIZE/32)*3);
 	
 	cudaMemcpy( pop, d_pop, POPULATION_SIZE*N_NODES*sizeof(int), cudaMemcpyDeviceToHost);
 	
