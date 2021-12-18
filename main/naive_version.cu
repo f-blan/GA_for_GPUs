@@ -8,37 +8,42 @@
 #include "main.h"
 
 #define PRINT_SUMMARY 1
-#define DEBUG 1
+#define DEBUG 0
 #define DEBUG_BLOCK 0
 #define PROVIDE_SOL 0
+#define PRINT_MAIN_LOOP 0
 
-int * init_population(curandGenerator_t gen, int n_dim, int population_dim){
-	int *pop;
+int init_population(int * pop,curandGenerator_t gen, int n_dim, int population_dim){
+	
 	unsigned int * rands;
 
 	
-	cudaMalloc((void **) &pop, n_dim*population_dim*sizeof(unsigned int));
-	cudaMalloc((void **) &rands, n_dim*population_dim*sizeof(unsigned int));
+	CUDA_CALL(cudaMalloc((void **) &rands, POPULATION_SIZE*N_NODES*sizeof(unsigned int)));
 	
-	curandGenerate(gen, (unsigned int *) rands, population_dim*n_dim*sizeof(unsigned int));
+	curandGenerate(gen, (unsigned int *) rands, POPULATION_SIZE*N_NODES*sizeof(unsigned int));
 	
 	cudaDeviceProp prop;
 	cudaGetDeviceProperties(&prop,0);
 	
-	dim3 threads(32,prop.maxThreadsDim[0]/32,1);
-	dim3 blocks(ceil(population_dim/prop.maxThreadsDim[0]),1,1); 
-	if(population_dim< prop.maxThreadsDim[0]){ 
-		threads.y = (population_dim < 32 ? 1 : population_dim/32);
+ 
+        dim3 threads(32,prop.maxThreadsDim[0]/32,1);
+	dim3 blocks(ceil(POPULATION_SIZE/prop.maxThreadsDim[0]),1,1); 
+	if(POPULATION_SIZE< prop.maxThreadsDim[0]){ 
+		threads.y = POPULATION_SIZE/32;
 		blocks.x = 1;
 	}
-	if(population_dim<32 ){
-		threads.x = population_dim;
-	}
+        if(population_dim<32 ){
+                threads.x = population_dim;
+        }
 
+	
+	
 	init_pop_s<<<blocks, threads>>>(pop, population_dim, n_dim, rands);
+	cudaDeviceSynchronize();
+	
 	
 	cudaFree(rands);
-	return pop;
+	return cudaSuccess;
 
 }
 
@@ -68,18 +73,20 @@ int main(){
 	unsigned int *d_shuffle_rands;		//POPULATION_SIZE
 	
 	unsigned int *d_genetic_rands;		//N_WARPS*OFFSPRING_FACTOR*3
+	
 
-	cudaMalloc((void **) &d_offspring, POPULATION_SIZE*N_NODES*OFFSPRING_FACTOR*sizeof(int));
-	cudaMalloc((void **) &d_auxiliary, POPULATION_SIZE*OFFSPRING_FACTOR*sizeof(int));
-	cudaMalloc((void **) &d_fitness, POPULATION_SIZE*OFFSPRING_FACTOR*sizeof(float));
-	cudaMalloc((void **) &d_shuffle_rands, POPULATION_SIZE*sizeof(unsigned int));
+	CUDA_CALL(cudaMalloc((void **) &d_population, POPULATION_SIZE*N_NODES*sizeof(int)));
+	CUDA_CALL(cudaMalloc((void **) &d_offspring, POPULATION_SIZE*N_NODES*OFFSPRING_FACTOR*sizeof(int)));
+	CUDA_CALL(cudaMalloc((void **) &d_auxiliary, POPULATION_SIZE*OFFSPRING_FACTOR*sizeof(int)));
+	CUDA_CALL(cudaMalloc((void **) &d_fitness, POPULATION_SIZE*OFFSPRING_FACTOR*sizeof(float)));
+	CUDA_CALL(cudaMalloc((void **) &d_shuffle_rands, POPULATION_SIZE*sizeof(unsigned int)));
 
 	int n_warps = POPULATION_SIZE/32;
 	if(POPULATION_SIZE <32){
 		n_warps =1;
 	}
 
-	cudaMalloc((void **) &d_genetic_rands, n_warps*OFFSPRING_FACTOR*3*sizeof(unsigned int));
+	CUDA_CALL(cudaMalloc((void **) &d_genetic_rands, n_warps*OFFSPRING_FACTOR*3*sizeof(unsigned int)));
 		
 	
 	
@@ -90,11 +97,11 @@ int main(){
 
 	
 	//initialize the data
-	d_population = init_population(gen, N_NODES, POPULATION_SIZE);
+	CUDA_CALL(init_population(d_population,gen, N_NODES, POPULATION_SIZE));
 
 #if DEBUG
 	int *pop = (int*) malloc(N_NODES*POPULATION_SIZE*sizeof(int));
-	cudaMemcpy( pop, d_population, N_NODES*POPULATION_SIZE*sizeof(int), cudaMemcpyDeviceToHost);
+	CUDA_CALL(cudaMemcpy( pop, d_population, N_NODES*POPULATION_SIZE*sizeof(int), cudaMemcpyDeviceToHost));
 
 	for(int t=0; t<POPULATION_SIZE; ++t){
 		for(int s =0; s<N_NODES; ++s){
@@ -109,9 +116,9 @@ int main(){
 	cudaDeviceProp prop;
 	cudaGetDeviceProperties(&prop,0);
 
-	dim3 threadsP(32,prop.maxThreadsDim[0]/32,1);
-	dim3 blocksP(ceil(POPULATION_SIZE/prop.maxThreadsDim[0]),1,1); 
-	if(POPULATION_SIZE< prop.maxThreadsDim[0]){ 
+	dim3 threadsP(32,THREADS_PER_BLOCK/32,1);
+	dim3 blocksP(ceil(POPULATION_SIZE/THREADS_PER_BLOCK),1,1); 
+	if(POPULATION_SIZE< THREADS_PER_BLOCK){ 
 		threadsP.y = (POPULATION_SIZE < 32 ? 1 : POPULATION_SIZE/32);
 		blocksP.x = 1;
 	}
@@ -120,9 +127,9 @@ int main(){
 	}
 
 
-	dim3 threadsS(32,prop.maxThreadsDim[0]/32,1);
-	dim3 blocksS(ceil((POPULATION_SIZE*OFFSPRING_FACTOR)/prop.maxThreadsDim[0]),1,1); 
-	if(POPULATION_SIZE*OFFSPRING_FACTOR< prop.maxThreadsDim[0]){ 
+	dim3 threadsS(32,THREADS_PER_BLOCK/32,1);
+	dim3 blocksS(ceil((POPULATION_SIZE*OFFSPRING_FACTOR)/THREADS_PER_BLOCK),1,1); 
+	if(POPULATION_SIZE*OFFSPRING_FACTOR< THREADS_PER_BLOCK){ 
 		threadsS.y = (POPULATION_SIZE*OFFSPRING_FACTOR < 32 ? 1 : POPULATION_SIZE*OFFSPRING_FACTOR/32);
 		blocksS.x = 1;
 	}
@@ -150,16 +157,17 @@ int main(){
 	//use events for measuring performance
 	cudaEvent_t start, stop;
 
-	cudaEventCreate(&start);
-	cudaEventCreate(&stop);
-	cudaEventRecord(start, 0);
+	CUDA_CALL(cudaEventCreate(&start));
+	CUDA_CALL(cudaEventCreate(&stop));
+	CUDA_CALL(cudaEventRecord(start, 0));
 	
 	//main loop
 	for(int t=0; t<N_ITERATIONS; ++t){
 		//generate random numbers for offspring generation
 		curandGenerate(gen, (unsigned int *) d_genetic_rands, n_warps*OFFSPRING_FACTOR*3*sizeof(unsigned int));
-
+#if PRINT_MAIN_LOOP
 		printf("it %d: generating the offspring\n", t);
+#endif
 		naive_generation<<<blocksP, threadsP>>>(d_population, 
 							POPULATION_SIZE, 
 							N_NODES, 
@@ -167,8 +175,9 @@ int main(){
 							OFFSPRING_FACTOR, 
 							d_genetic_rands);
 	
-		
+#if PRINT_MAIN_LOOP		
 		printf("it %d: applying selection\n", t);
+#endif
 		naive_selection(d_offspring,
 				d_population,
 				N_NODES,
@@ -196,12 +205,14 @@ int main(){
 		//record best solution
 		cudaMemcpy( current_best, d_population, N_NODES*sizeof(int), cudaMemcpyDeviceToHost);
 		cudaMemcpy( &current_fitness, d_fitness, sizeof(float), cudaMemcpyDeviceToHost);
-		
+#if PRINT_MAIN_LOOP		
 		printf("it %d: currently found fitness is %.2f\n", t, current_fitness);
-
+#endif
 		fitnesses[t] = current_fitness;
 		if(current_fitness<best_fitness){
+#if PRINT_MAIN_LOOP
 			printf("it %d: improvement found!\n", t);
+#endif
 			best_fitness = current_fitness;
 			for(int s=0; s<N_NODES; ++s){
 				global_best[s] = current_best[s];
@@ -219,6 +230,8 @@ int main(){
 
 	float elapsedTime;
 	cudaEventElapsedTime(&elapsedTime, start, stop);
+
+	printf("Iterated %d times, elapsed time is %.2f ms, for %.2f ms/it\n", N_ITERATIONS, elapsedTime, elapsedTime/N_ITERATIONS);
 
 #if PRINT_SUMMARY
 	printf("summary of iterations:\n");

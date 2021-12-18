@@ -14,8 +14,8 @@ void test_sel();
 void test_shuffle();
 
 int main(void){
-	//test_init();
-	test_ngen();
+	test_init();
+	//test_ngen();
 	//test_sel();
 	//test_shuffle();	
 	
@@ -164,6 +164,7 @@ void test_sel(){
 #endif
 	printf("launching naive_selection with (%d, %d,%d) threads and %d blocks\n", 
 			threads_sel.x, threads_sel.y, threads_sel.z, blocks_sel.x);
+	/*
 	naive_selection<<<blocks_sel, threads_sel>>>(	d_off,
 							d_pop,
 							N_NODES,
@@ -171,7 +172,7 @@ void test_sel(){
 							OFFSPRING_FACTOR,
 							d_v,
 							d_eval,
-							aux);
+							aux);*/
 	
 #if VERBOSE
 	
