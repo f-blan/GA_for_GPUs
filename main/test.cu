@@ -11,13 +11,60 @@
 void test_utils();
 void test_mutation_ops();
 void test_curand();
+void test_cycle_CO();
 
 int main(void){
 	//test_utils();
-	test_mutation_ops();
+	//test_mutation_ops();
 	//test_curand();
+	test_cycle_CO();
 
 	return 0;
+}
+
+void test_cycle_CO(){
+	int size = 6; 
+	int vec[] = { 	
+			0,1,2,3,4,5,
+			1,2,3,4,5,0			
+		};
+	int rands[] = { 1, 1, 4 };
+	cycle_crossover(vec, vec, 2, size, rands, 0);
+
+	for (int t = 0; t<2; ++t){
+		for(int s =0; s<size; ++s){
+			printf("%d ", vec[t*size +s]);
+		}
+		printf("\n");
+	}
+
+	int vec2[] = { 	
+			0,1,2,3,4,5,
+			1,2,3,4,5,0			
+		};
+	int rands2[] = { 1, 1, 3 };
+	cycle_crossover(vec2, vec2, 2, size, rands2, 0);
+
+	for (int t = 0; t<2; ++t){
+		for(int s =0; s<size; ++s){
+			printf("%d ", vec2[t*size +s]);
+		}
+		printf("\n");
+	}
+
+	int vec3[] = { 	
+			0,1,2,3,4,5,
+			1,2,3,4,5,0			
+		};
+	int rands3[] = { 1, 0, 3 };
+	cycle_crossover(vec3, vec3, 2, size, rands3, 0);
+
+	for (int t = 0; t<2; ++t){
+		for(int s =0; s<size; ++s){
+			printf("%d ", vec3[t*size +s]);
+		}
+		printf("\n");
+	}
 }
 
 void test_utils(){
