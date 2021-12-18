@@ -8,6 +8,7 @@
 #include "main.h"
 
 #define PRINT_SUMMARY 1
+#define DEBUG 1
 
 int * init_population(curandGenerator_t gen, int n_dim, int population_dim){
 	int *pop;
@@ -89,21 +90,42 @@ int main(){
 	//initialize the data
 	d_population = init_population(gen, N_NODES, POPULATION_SIZE);
 
+#if DEBUG
+	int *pop = (int*) malloc(N_NODES*POPULATION_SIZE*sizeof(int));
+	cudaMemcpy( pop, d_population, N_NODES*POPULATION_SIZE*sizeof(int), cudaMemcpyDeviceToHost);
+
+	for(int t=0; t<POPULATION_SIZE; ++t){
+		for(int s =0; s<N_NODES; ++s){
+			printf("%d ", pop[t*N_NODES + s]);
+		}
+		printf("\n");
+	}
+	int *off = (int*) malloc(N_NODES*POPULATION_SIZE*OFFSPRING_FACTOR*sizeof(int));
+#endif
 	
 	//kernel parameters
 	cudaDeviceProp prop;
 	cudaGetDeviceProperties(&prop,0);
 
-	dim3 threads(32,prop.maxThreadsDim[0]/32,1);
-	dim3 blocks(ceil(POPULATION_SIZE/prop.maxThreadsDim[0]),1,1); 
+	dim3 threadsP(32,prop.maxThreadsDim[0]/32,1);
+	dim3 blocksP(ceil(POPULATION_SIZE/prop.maxThreadsDim[0]),1,1); 
 	if(POPULATION_SIZE< prop.maxThreadsDim[0]){ 
-		threads.y = (POPULATION_SIZE < 32 ? 1 : POPULATION_SIZE/32);
-		blocks.x = 1;
+		threadsP.y = (POPULATION_SIZE < 32 ? 1 : POPULATION_SIZE/32);
+		blocksP.x = 1;
 	}
 	if(POPULATION_SIZE<32 ){
-		threads.x = POPULATION_SIZE;
-	}	
+		threadsP.x = POPULATION_SIZE;
+	}
 
+	dim3 threadsS(32,prop.maxThreadsDim[0]/32,1);
+	dim3 blocksS(ceil((POPULATION_SIZE*OFFSPRING_FACTOR)/prop.maxThreadsDim[0]),1,1); 
+	if(POPULATION_SIZE*OFFSPRING_FACTOR< prop.maxThreadsDim[0]){ 
+		threadsS.y = (POPULATION_SIZE*OFFSPRING_FACTOR < 32 ? 1 : POPULATION_SIZE*OFFSPRING_FACTOR/32);
+		blocksS.x = 1;
+	}
+	if(POPULATION_SIZE*OFFSPRING_FACTOR<32 ){
+		threadsS.x = POPULATION_SIZE*OFFSPRING_FACTOR;
+	}
 
 	//support variables
 	int *global_best = (int*) malloc(N_NODES*sizeof(int));
@@ -119,11 +141,27 @@ int main(){
 		curandGenerate(gen, (unsigned int *) d_genetic_rands, n_warps*OFFSPRING_FACTOR*3*sizeof(unsigned int));
 
 		printf("it %d: generating the offspring\n", t);
-
-		init_pop_s<<<blocks, threads>>>(d_population, POPULATION_SIZE, N_NODES, d_genetic_rands);
+		naive_generation<<<blocksP, threadsP>>>(d_population, 
+							POPULATION_SIZE, 
+							N_NODES, 
+							d_offspring, 
+							OFFSPRING_FACTOR, 
+							d_genetic_rands);
+	
 		
-		printf("it %d: applying selection", t);
-		naive_selection<<<blocks, threads>>>(	d_offspring,
+
+#if DEBUG
+		cudaMemcpy( off, d_offspring, N_NODES*POPULATION_SIZE*OFFSPRING_FACTOR*sizeof(int), cudaMemcpyDeviceToHost);
+
+		for(int k=0; k<POPULATION_SIZE*OFFSPRING_FACTOR; ++k){
+			for(int s =0; s<N_NODES; ++s){
+				printf("%d ", off[k*N_NODES + s]);
+			}
+			printf("\n");
+		}
+#endif	
+		printf("it %d: applying selection\n", t);
+		naive_selection<<<blocksS, threadsS>>>(	d_offspring,
 							d_population,
 							N_NODES,
 							POPULATION_SIZE,
@@ -135,10 +173,13 @@ int main(){
 		//record best solution
 		cudaMemcpy( current_best, d_population, N_NODES*sizeof(int), cudaMemcpyDeviceToHost);
 		cudaMemcpy( &current_fitness, d_fitness, sizeof(float), cudaMemcpyDeviceToHost);
+		
+		printf("it %d: currently found fitness is %.2f\n", t, current_fitness);
 
 		fitnesses[t] = current_fitness;
 		if(current_fitness<best_fitness){
-			printf("it %d: improvement found!", t);
+			printf("it %d: improvement found!\n", t);
+			best_fitness = current_fitness;
 			for(int s=0; s<N_NODES; ++s){
 				global_best[s] = current_best[s];
 			}
@@ -173,7 +214,10 @@ int main(){
 	cudaFree(d_shuffle_rands);
 	cudaFree(d_genetic_rands);
 	cudaFree(d_auxiliary);
-	
+#if DEBUG
+	free(pop);
+	free(off);
+#endif
 
 }
 

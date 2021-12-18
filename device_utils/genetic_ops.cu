@@ -97,16 +97,18 @@ __device__ void cycle_crossover(	int *parent1,
 	//make sure that the whole warp is not using the same parent2 to generate offspring
 	p2_i = (p2_i + ((p1_i*100)/17) + 1)%population_dim;
 
-#if DEBUG_PRINT
-	printf("function init: p2_i %d, p1_i %d, i1 %d, i2 %d\n", p2_i, p1_i, index1, index2);
-#endif
+
 	
 	//make sure index1 <= index2
 	index1 = (index1>index2 ? index2 : index1);
 	index2 = (index1>index2 ? index1 : index2);
+
+#if DEBUG_PRINT
+	printf("function init: p2_i %d, p1_i %d, i1 %d, i2 %d\n", p2_i, p1_i, index1, index2);
+#endif
 	
-	int assign_i = 0;
-	bool surpassed = 0;
+	int assign_i = 0 + (index2+1*(index2+1<n_dim))*(index1==0);
+	bool surpassed = 0 + 1*(index1==0);
 	
 	for(int t = 0; t<n_dim; ++t){
 		//iterate over p2
@@ -124,7 +126,7 @@ __device__ void cycle_crossover(	int *parent1,
 		//update assign_i while taking care if assign_i has surpassed index1
 		assign_i += 	((assign_i+1 >= index1)*(index2-index1+1*(index2+1 < n_dim))
 								*(!surpassed) + 	//surpassing increment (happens once)
-				(assign_i<index1 ||(assign_i>index2 && assign_i<n_dim)))//regular +1 (should happen often)
+				(assign_i<index1 ||(assign_i>index2 && assign_i+1<n_dim)))//regular +1 (should happen often)
 				*(!present);						//increment is 0 if we reached the end of p1
 											//or we didn't assign the p2 value
 		surpassed += assign_i > index1;

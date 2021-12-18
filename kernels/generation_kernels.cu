@@ -1,6 +1,6 @@
 #define DEBUG_PRINT 0
-#define SWAP_FACTOR -1
-#define INVERT_FACTOR -1
+#define SWAP_FACTOR 1
+#define INVERT_FACTOR 2
 #define RECOMBINATION_FACTOR 6
 
 __global__ void naive_generation(int* population, 
@@ -54,7 +54,7 @@ __global__ void naive_generation(int* population,
 						population_dim,
 						n_dim, 
 						random_nums + ((tid/32)*3 + 3*t),
-						tid*n_dim*offspring_factor +n_dim*t);
+						tid);
 		}
 	}
 }

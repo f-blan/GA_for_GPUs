@@ -1,4 +1,4 @@
-#define DEBUG_PRINT 1
+#define DEBUG_PRINT 0
 
 __global__ void naive_selection(	int *offspring, 
 					int *next_generation, 
