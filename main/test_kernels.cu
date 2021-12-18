@@ -24,12 +24,14 @@ int main(void){
 }
 
 void test_shuffle(){
-	int *pop;
-	int *d_pop, *aux,*out;
+	int *pop, *haux;
+	int *d_pop,*d_off, *aux,*out;
 	unsigned int *d_rands, *d_srands;
 	
 	pop= (int*) malloc(POPULATION_SIZE*N_NODES*sizeof(int));
+	haux= (int*) malloc(POPULATION_SIZE*sizeof(int));
 	cudaMalloc( (void **) &d_pop, POPULATION_SIZE*N_NODES*sizeof(int) );
+	cudaMalloc( (void **) &d_off, POPULATION_SIZE*N_NODES*sizeof(int) );
 	cudaMalloc( (void **) &out, POPULATION_SIZE*N_NODES*sizeof(int) );
 	cudaMalloc( (void **) &aux, POPULATION_SIZE*sizeof(int) );
 
@@ -41,6 +43,9 @@ void test_shuffle(){
 	curandGenerate(gen, (unsigned int *) d_rands, POPULATION_SIZE*N_NODES*sizeof(unsigned int));
 	curandGenerate(gen, (unsigned int *) d_srands, POPULATION_SIZE*sizeof(unsigned int));
 	
+	for(int t=0; t<POPULATION_SIZE; ++t) haux[t] = t;
+
+	cudaMemcpy( aux, haux, POPULATION_SIZE*sizeof(int), cudaMemcpyHostToDevice);
 
 	cudaDeviceProp prop;
 	cudaGetDeviceProperties(&prop,0);
@@ -71,10 +76,9 @@ void test_shuffle(){
 #endif
 	printf("launching shuffle init with (%d, %d,%d) threads and %d blocks\n", 
 			threads.x, threads.y, threads.z, blocks.x);
-	shuffle<<<blocks, threads>>>(	d_pop, out, POPULATION_SIZE,
-					N_NODES,aux, d_rands);
+	thrust_shuffle(d_pop, d_off, aux, gen, d_srands, N_NODES, POPULATION_SIZE);
 #if VERBOSE	
-	cudaMemcpy( pop, out, POPULATION_SIZE*N_NODES*sizeof(int), cudaMemcpyDeviceToHost);
+	cudaMemcpy( pop, d_pop, POPULATION_SIZE*N_NODES*sizeof(int), cudaMemcpyDeviceToHost);
 	
 	for(int t =0; t<POPULATION_SIZE; ++t){
 		for(int s =0; s<N_NODES; ++s){
@@ -90,6 +94,7 @@ void test_shuffle(){
 	curandDestroyGenerator(gen);
 	cudaFree(d_rands);
 	cudaFree(d_pop);
+	cudaFree(d_off);
 	cudaFree(d_srands);
 }
 
@@ -100,8 +105,8 @@ void test_sel(){
 	unsigned int *d_rands;
 
 	pop= (int*) malloc(POPULATION_SIZE*N_NODES*sizeof(int));
-	off= (int*) malloc(POPULATION_SIZE*N_NODES*OFFSPRING_FACTOR*sizeof(int));
-	
+	off = (int*) malloc(POPULATION_SIZE*N_NODES*OFFSPRING_FACTOR*sizeof(int));
+
 	cudaMalloc((void **) &d_off, POPULATION_SIZE*OFFSPRING_FACTOR*N_NODES*sizeof(int));
 	cudaMalloc((void **) &d_eval, POPULATION_SIZE*OFFSPRING_FACTOR*N_NODES*sizeof(float));
 	cudaMalloc((void **) &aux, POPULATION_SIZE*OFFSPRING_FACTOR*sizeof(int));

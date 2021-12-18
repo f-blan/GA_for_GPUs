@@ -54,8 +54,11 @@ __global__ void naive_selection(	int *offspring,
 	if(tid<population_dim){
 		for(i=0; i<n_dim; ++i){
 			next_generation[tid*n_dim + i]= offspring[n_dim*auxiliary[tid] + i];
+			
 		}
 	}
+	//reorder the auxiliary vector (will be used for shuffling)
+	auxiliary[tid] = tid;
 }
 
 

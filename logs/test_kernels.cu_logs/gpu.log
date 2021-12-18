@@ -1,0 +1,17 @@
+==9403== NVPROF is profiling process 9403, command: ./a.out
+==9403== Warning: Unified Memory Profiling is not supported on the underlying platform. System requirements for unified memory can be found at: http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#um-requirements
+==9403== Profiling application: ./a.out
+==9403== Profiling result:
+   Start  Duration            Grid Size      Block Size     Regs*    SSMem*    DSMem*      Size  Throughput  SrcMemType  DstMemType           Device   Context    Stream  Name
+581.57ms  55.009ms             (64 1 1)        (64 1 1)        48        0B        0B         -           -           -           -  NVIDIA Tegra X1         1         7  generate_seed_pseudo(__int64, __int64, __int64, curandOrdering, curandStateXORWOW*, unsigned int*) [216]
+637.50ms  5.1060us             (64 1 1)        (64 1 1)        30        0B        0B         -           -           -           -  NVIDIA Tegra X1         1         7  void gen_sequenced<curandStateXORWOW, unsigned int, int, __operator_&__(unsigned int curand_noargs<curandStateXORWOW>(curandStateXORWOW*, int)), rng_config<curandStateXORWOW>>(curandStateXORWOW*, unsigned int*, unsigned long, unsigned long, int) [221]
+637.81ms  21.412us             (64 1 1)        (64 1 1)        30        0B        0B         -           -           -           -  NVIDIA Tegra X1         1         7  void gen_sequenced<curandStateXORWOW, unsigned int, int, __operator_&__(unsigned int curand_noargs<curandStateXORWOW>(curandStateXORWOW*, int)), rng_config<curandStateXORWOW>>(curandStateXORWOW*, unsigned int*, unsigned long, unsigned long, int) [226]
+638.01ms  27.716us              (1 1 1)        (32 1 1)        32        0B        0B         -           -           -           -  NVIDIA Tegra X1         1         7  init_pop_s(int*, int, int, unsigned int*) [228]
+638.21ms  46.835us              (1 1 1)        (32 1 1)        25        0B        0B         -           -           -           -  NVIDIA Tegra X1         1         7  naive_generation(int*, int, int, int*, int, unsigned int*) [230]
+638.36ms  2.2930us                    -               -         -         -         -  4.0000KB  1.6636GB/s      Device    Pageable  NVIDIA Tegra X1         1         7  [CUDA memcpy DtoH]
+
+Regs: Number of registers used per CUDA thread. This number includes registers used internally by the CUDA driver and/or tools and can be more than what the compiler shows.
+SSMem: Static shared memory allocated per CUDA block.
+DSMem: Dynamic shared memory allocated per CUDA block.
+SrcMemType: The type of source memory accessed by memory operation/copy
+DstMemType: The type of destination memory accessed by memory operation/copy

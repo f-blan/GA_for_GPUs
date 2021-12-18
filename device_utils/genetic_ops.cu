@@ -2,7 +2,7 @@
 #include <stdbool.h>
 
 
-#define DEBUG_PRINT 1
+#define DEBUG_PRINT 0
 
 /*
 	some infos on the used data:

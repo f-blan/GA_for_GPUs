@@ -1,4 +1,4 @@
-#define DEBUG_PRINT 1
+#define DEBUG_PRINT 0
 #define SWAP_FACTOR -1
 #define INVERT_FACTOR -1
 #define RECOMBINATION_FACTOR 6

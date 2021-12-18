@@ -1,5 +1,7 @@
 #include <stdio.h>
 
+
+
 #define SPACE_WIDTH 100
 #define SPACE_HEIGHT 100
 
