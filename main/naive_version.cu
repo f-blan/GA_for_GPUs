@@ -9,6 +9,8 @@
 
 #define PRINT_SUMMARY 1
 #define DEBUG 1
+#define DEBUG_BLOCK 0
+#define PROVIDE_SOL 1
 
 int * init_population(curandGenerator_t gen, int n_dim, int population_dim){
 	int *pop;
@@ -117,6 +119,7 @@ int main(){
 		threadsP.x = POPULATION_SIZE;
 	}
 
+
 	dim3 threadsS(32,prop.maxThreadsDim[0]/32,1);
 	dim3 blocksS(ceil((POPULATION_SIZE*OFFSPRING_FACTOR)/prop.maxThreadsDim[0]),1,1); 
 	if(POPULATION_SIZE*OFFSPRING_FACTOR< prop.maxThreadsDim[0]){ 
@@ -126,6 +129,14 @@ int main(){
 	if(POPULATION_SIZE*OFFSPRING_FACTOR<32 ){
 		threadsS.x = POPULATION_SIZE*OFFSPRING_FACTOR;
 	}
+#if DEBUG_BLOCK
+	blocksP.x *=2;
+	threadsP.y /=2;
+	blocksS.x *=2;
+	threadsS.y /=2;
+#endif
+	printf("operation on population will be launched on %d blocks with dim (%d, %d)\n", blocksP.x, threadsP.x,threadsP.y);
+	printf("operation on offspring will be launched on %d blocks with dim (%d, %d)\n", blocksS.x, threadsS.x,threadsS.y);
 
 	//support variables
 	int *global_best = (int*) malloc(N_NODES*sizeof(int));
@@ -207,6 +218,12 @@ int main(){
 	}
 	printf("\n");
 
+#if PROVIDE_SOL
+	int sol[] = {0,2,6,4,3,5,1,7};
+	printf("best solution computed has lengths %.2f\n",evaluate_individual_host(vec_graph,N_NODES,sol));
+	printf("best solution host has lengths %.2f\n",evaluate_individual_host(vec_graph,N_NODES,global_best));
+#endif
+	free(vec_graph);
 	free(global_best);
 	free(current_best);
 	cudaFree(d_population);

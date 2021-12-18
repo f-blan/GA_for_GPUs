@@ -12,7 +12,7 @@ __global__ void naive_selection(	int *offspring,
 	unsigned int tid = blockIdx.x*(blockDim.x*blockDim.y) + threadIdx.y*blockDim.x+ threadIdx.x;
 	
 	//evaluate each child
-	fitness[tid] = evaluate_individual(graph, n_dim, offspring + tid);
+	fitness[tid] = evaluate_individual(graph, n_dim, offspring + (tid*n_dim));
 	auxiliary[tid] =tid;
 #if DEBUG_PRINT	
 	printf("%d got %.2f\n", tid, fitness[tid]);

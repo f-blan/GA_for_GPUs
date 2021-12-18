@@ -4,6 +4,7 @@
 
 #define SPACE_WIDTH 100
 #define SPACE_HEIGHT 100
+#define DEBUG_PRINT 1
 
 void say_hi(void){
 	printf("HELLOOOOO\n");
@@ -97,7 +98,22 @@ void print_mat(float **m, int dim){
 	}
 }
 
+float evaluate_individual_host(float *graph, int n_dim, int *individual){
+	float cost =0;	
 
+	for(int t=0; t<n_dim-1; ++t){
+#if DEBUG_PRINT  
+		printf("evaluation, cost1 is %.2f for %d -> %d\n", graph[individual[t]*n_dim + individual[t+1]], individual[t], individual[t+1]);
+#endif
+		cost += graph[individual[t]*n_dim + individual[t+1]];
+	}
+
+#if DEBUG_PRINT  
+		printf("evaluation, cost1 is %.2f for %d -> %d\n", graph[individual[n_dim-1]*n_dim + individual[0]], individual[n_dim-1], individual[0]);
+#endif
+	cost += graph[individual[0]*n_dim + individual[n_dim-1]];
+	return cost;
+}
 
 
 
