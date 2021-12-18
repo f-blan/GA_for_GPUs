@@ -10,7 +10,7 @@
 #define PRINT_SUMMARY 1
 #define DEBUG 1
 #define DEBUG_BLOCK 0
-#define PROVIDE_SOL 1
+#define PROVIDE_SOL 0
 
 int * init_population(curandGenerator_t gen, int n_dim, int population_dim){
 	int *pop;
@@ -132,8 +132,10 @@ int main(){
 #if DEBUG_BLOCK
 	blocksP.x *=2;
 	threadsP.y /=2;
+	if(threadsP.y ==0) threadsP.y = 1;
 	blocksS.x *=2;
 	threadsS.y /=2;
+	if(threadsS.y ==0) threadsS.y = 1;
 #endif
 	printf("operation on population will be launched on %d blocks with dim (%d, %d)\n", blocksP.x, threadsP.x,threadsP.y);
 	printf("operation on offspring will be launched on %d blocks with dim (%d, %d)\n", blocksS.x, threadsS.x,threadsS.y);
@@ -160,26 +162,30 @@ int main(){
 							d_genetic_rands);
 	
 		
+		printf("it %d: applying selection\n", t);
+		naive_selection(d_offspring,
+				d_population,
+				N_NODES,
+				POPULATION_SIZE,
+				OFFSPRING_FACTOR,
+				d_vec_graph,
+				d_fitness,
+				d_auxiliary,
+				threadsS,
+				blocksS,
+				threadsP,
+				blocksP);
 
 #if DEBUG
-		cudaMemcpy( off, d_offspring, N_NODES*POPULATION_SIZE*OFFSPRING_FACTOR*sizeof(int), cudaMemcpyDeviceToHost);
+		cudaMemcpy( pop, d_population, N_NODES*POPULATION_SIZE*sizeof(int), cudaMemcpyDeviceToHost);
 
-		for(int k=0; k<POPULATION_SIZE*OFFSPRING_FACTOR; ++k){
+		for(int k=0; k<POPULATION_SIZE; ++k){
 			for(int s =0; s<N_NODES; ++s){
-				printf("%d ", off[k*N_NODES + s]);
+				printf("%d ", pop[k*N_NODES + s]);
 			}
-			printf("\n");
+			printf("fitness: %.2f\n", evaluate_individual_host(vec_graph,N_NODES,pop+k*N_NODES));
 		}
 #endif	
-		printf("it %d: applying selection\n", t);
-		naive_selection<<<blocksS, threadsS>>>(	d_offspring,
-							d_population,
-							N_NODES,
-							POPULATION_SIZE,
-							OFFSPRING_FACTOR,
-							d_vec_graph,
-							d_fitness,
-							d_auxiliary);
 
 		//record best solution
 		cudaMemcpy( current_best, d_population, N_NODES*sizeof(int), cudaMemcpyDeviceToHost);

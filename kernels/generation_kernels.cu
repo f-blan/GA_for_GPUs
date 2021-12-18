@@ -1,6 +1,6 @@
 #define DEBUG_PRINT 0
-#define SWAP_FACTOR 1
-#define INVERT_FACTOR 2
+#define SWAP_FACTOR -1
+#define INVERT_FACTOR -1
 #define RECOMBINATION_FACTOR 6
 
 __global__ void naive_generation(int* population, 

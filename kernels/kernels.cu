@@ -107,7 +107,7 @@ __global__ void swap_with_positions(int *copy, int *out, int *positions, int n_d
 	int pos = positions[tid];
 
 	for(int t=0; t<n_dim; ++t){
-		out[pos*n_dim + t] = copy[tid*n_dim+t];
+		out[tid*n_dim + t] = copy[pos*n_dim+t];
 	}
 #if DEBUG_PRINT
 	printf("thread: %u, put array to %d. First val: %d\n", tid, pos, out[pos*n_dim]);

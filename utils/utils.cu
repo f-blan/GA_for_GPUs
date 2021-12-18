@@ -4,7 +4,7 @@
 
 #define SPACE_WIDTH 100
 #define SPACE_HEIGHT 100
-#define DEBUG_PRINT 1
+#define DEBUG_PRINT 0
 
 void say_hi(void){
 	printf("HELLOOOOO\n");
