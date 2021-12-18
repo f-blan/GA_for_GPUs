@@ -1,0 +1,52 @@
+==12239== NVPROF is profiling process 12239, command: ./a.out
+==12239== Warning: Unified Memory Profiling is not supported on the underlying platform. System requirements for unified memory can be found at: http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#um-requirements
+==12239== Profiling application: ./a.out
+==12239== Profiling result:
+            Type  Time(%)      Time     Calls       Avg       Min       Max  Name
+ GPU activities:   54.22%  697.17ms       500  1.3943ms  922.00us  2.1736ms  naive_generation(int*, int*, unsigned int*)
+                   13.86%  178.23ms         1  178.23ms  178.23ms  178.23ms  generate_seed_pseudo(__int64, __int64, __int64, curandOrdering, curandStateXORWOW*, unsigned int*)
+                   10.60%  136.24ms      1000  136.24us  110.68us  177.66us  swap_with_positions(int*, int*, int*, int, int)
+                    8.89%  114.24ms       500  228.49us  191.51us  352.46us  constant_evaluate_kernel(int*, int, float*, int*)
+                    3.68%  47.298ms      1001  47.251us  22.291us  173.55us  void gen_sequenced<curandStateXORWOW, unsigned int, int, __operator_&__(unsigned int curand_noargs<curandStateXORWOW>(curandStateXORWOW*, int)), rng_config<curandStateXORWOW>>(curandStateXORWOW*, unsigned int*, unsigned long, unsigned long, int)
+                    1.60%  20.608ms      2000  10.303us  3.8540us  20.105us  void thrust::cuda_cub::cub::DeviceRadixSortDownsweepKernel<thrust::cuda_cub::cub::DeviceRadixSortPolicy<float, int, int>::Policy700, bool=0, bool=0, float, int, int>(thrust::cuda_cub::cub::DeviceRadixSortPolicy<float, int, int>::Policy700 const *, thrust::cuda_cub::cub::DeviceRadixSortDownsweepKernel<thrust::cuda_cub::cub::DeviceRadixSortPolicy<float, int, int>::Policy700, bool=0, bool=0, float, int, int>*, bool=0 const *, thrust::cuda_cub::cub::DeviceRadixSortDownsweepKernel<thrust::cuda_cub::cub::DeviceRadixSortPolicy<float, int, int>::Policy700, bool=0, bool=0, float, int, int>**, bool=0*, thrust::cuda_cub::cub::DeviceRadixSortDownsweepKernel<thrust::cuda_cub::cub::DeviceRadixSortPolicy<float, int, int>::Policy700, bool=0, bool=0, float, int, int>**, int, int, thrust::cuda_cub::cub::GridEvenShare<thrust::cuda_cub::cub::DeviceRadixSortDownsweepKernel<thrust::cuda_cub::cub::DeviceRadixSortPolicy<float, int, int>::Policy700, bool=0, bool=0, float, int, int>**>)
+                    1.36%  17.495ms      3500  4.9980us  4.0100us  8.1250us  void thrust::cuda_cub::cub::RadixSortScanBinsKernel<thrust::cuda_cub::cub::DeviceRadixSortPolicy<float, int, int>::Policy700, int>(int*, int)
+                    1.35%  17.302ms      1500  11.534us  7.5000us  19.114us  void thrust::cuda_cub::cub::DeviceRadixSortDownsweepKernel<thrust::cuda_cub::cub::DeviceRadixSortPolicy<float, int, int>::Policy700, bool=1, bool=0, float, int, int>(thrust::cuda_cub::cub::DeviceRadixSortPolicy<float, int, int>::Policy700 const *, thrust::cuda_cub::cub::DeviceRadixSortDownsweepKernel<thrust::cuda_cub::cub::DeviceRadixSortPolicy<float, int, int>::Policy700, bool=1, bool=0, float, int, int>*, bool=1 const *, thrust::cuda_cub::cub::DeviceRadixSortDownsweepKernel<thrust::cuda_cub::cub::DeviceRadixSortPolicy<float, int, int>::Policy700, bool=1, bool=0, float, int, int>**, bool=0*, thrust::cuda_cub::cub::DeviceRadixSortDownsweepKernel<thrust::cuda_cub::cub::DeviceRadixSortPolicy<float, int, int>::Policy700, bool=1, bool=0, float, int, int>**, int, int, thrust::cuda_cub::cub::GridEvenShare<thrust::cuda_cub::cub::DeviceRadixSortDownsweepKernel<thrust::cuda_cub::cub::DeviceRadixSortPolicy<float, int, int>::Policy700, bool=1, bool=0, float, int, int>**>)
+                    1.09%  13.977ms       500  27.954us  24.428us  35.105us  void thrust::cuda_cub::cub::DeviceRadixSortSingleTileKernel<thrust::cuda_cub::cub::DeviceRadixSortPolicy<unsigned int, int, int>::Policy700, bool=0, unsigned int, int, int>(int const *, thrust::cuda_cub::cub::DeviceRadixSortSingleTileKernel<thrust::cuda_cub::cub::DeviceRadixSortPolicy<unsigned int, int, int>::Policy700, bool=0, unsigned int, int, int>*, thrust::cuda_cub::cub::DeviceRadixSortPolicy<unsigned int, int, int>::Policy700 const *, thrust::cuda_cub::cub::DeviceRadixSortSingleTileKernel<thrust::cuda_cub::cub::DeviceRadixSortPolicy<unsigned int, int, int>::Policy700, bool=0, unsigned int, int, int>**, bool=0, int, int)
+                    0.96%  12.285ms      2000  6.1420us  4.6350us  9.9470us  void thrust::cuda_cub::cub::DeviceRadixSortUpsweepKernel<thrust::cuda_cub::cub::DeviceRadixSortPolicy<float, int, int>::Policy700, bool=0, bool=0, float, int>(thrust::cuda_cub::cub::DeviceRadixSortPolicy<float, int, int>::Policy700 const *, bool=0*, thrust::cuda_cub::cub::DeviceRadixSortPolicy<float, int, int>::Policy700 const *, int, int, thrust::cuda_cub::cub::GridEvenShare<thrust::cuda_cub::cub::DeviceRadixSortPolicy<float, int, int>::Policy700 const *>)
+                    0.80%  10.278ms       500  20.555us  17.813us  25.105us  [CUDA memcpy DtoD]
+                    0.60%  7.6766ms      1500  5.1170us  3.3330us  8.6980us  void thrust::cuda_cub::cub::DeviceRadixSortUpsweepKernel<thrust::cuda_cub::cub::DeviceRadixSortPolicy<float, int, int>::Policy700, bool=1, bool=0, float, int>(thrust::cuda_cub::cub::DeviceRadixSortPolicy<float, int, int>::Policy700 const *, bool=1*, thrust::cuda_cub::cub::DeviceRadixSortPolicy<float, int, int>::Policy700 const *, int, int, thrust::cuda_cub::cub::GridEvenShare<thrust::cuda_cub::cub::DeviceRadixSortPolicy<float, int, int>::Policy700 const *>)
+                    0.47%  6.0550ms         1  6.0550ms  6.0550ms  6.0550ms  init_pop_s(int*, int, int, unsigned int*)
+                    0.17%  2.2231ms      1000  2.2230us  1.3020us  3.9070us  void thrust::cuda_cub::core::_kernel_agent<thrust::cuda_cub::__parallel_for::ParallelForAgent<thrust::cuda_cub::__transform::unary_transform_f<int*, int*, thrust::cuda_cub::__transform::no_stencil_tag, thrust::identity<int>, thrust::cuda_cub::__transform::always_true_predicate>, long>, thrust::cuda_cub::__transform::unary_transform_f<int*, int*, thrust::cuda_cub::__transform::no_stencil_tag, thrust::identity<int>, thrust::cuda_cub::__transform::always_true_predicate>, long>(int*, thrust::cuda_cub::__transform::no_stencil_tag)
+                    0.13%  1.7062ms       500  3.4120us  2.6560us  4.9480us  swap_best(int*, float*, int, int*, float*)
+                    0.11%  1.4642ms       500  2.9280us  2.0840us  4.6870us  void thrust::cuda_cub::core::_kernel_agent<thrust::cuda_cub::__parallel_for::ParallelForAgent<thrust::cuda_cub::__transform::unary_transform_f<float*, float*, thrust::cuda_cub::__transform::no_stencil_tag, thrust::identity<float>, thrust::cuda_cub::__transform::always_true_predicate>, long>, thrust::cuda_cub::__transform::unary_transform_f<float*, float*, thrust::cuda_cub::__transform::no_stencil_tag, thrust::identity<float>, thrust::cuda_cub::__transform::always_true_predicate>, long>(float*, thrust::cuda_cub::__transform::no_stencil_tag)
+                    0.09%  1.1764ms       500  2.3520us  1.9790us  3.6460us  void thrust::cuda_cub::core::_kernel_agent<thrust::cuda_cub::__parallel_for::ParallelForAgent<thrust::cuda_cub::__transform::unary_transform_f<unsigned int*, unsigned int*, thrust::cuda_cub::__transform::no_stencil_tag, thrust::identity<unsigned int>, thrust::cuda_cub::__transform::always_true_predicate>, long>, thrust::cuda_cub::__transform::unary_transform_f<unsigned int*, unsigned int*, thrust::cuda_cub::__transform::no_stencil_tag, thrust::identity<unsigned int>, thrust::cuda_cub::__transform::always_true_predicate>, long>(unsigned int*, thrust::cuda_cub::__transform::no_stencil_tag)
+                    0.02%  285.52us       503     567ns     468ns  2.1360us  [CUDA memcpy DtoH]
+                    0.00%  14.688us         2  7.3440us  5.7300us  8.9580us  [CUDA memcpy HtoD]
+      API calls:   69.37%  4.48249s         1  4.48249s  4.48249s  4.48249s  cudaMemcpyToSymbol
+                   11.70%  755.81ms     16503  45.798us  27.604us  867.81us  cudaLaunchKernel
+                    6.88%  444.53ms      2001  222.15us  6.3020us  6.0685ms  cudaDeviceSynchronize
+                    4.80%  310.42ms      1014  306.13us  1.5620us  180.55ms  cudaFree
+                    2.81%  181.84ms         1  181.84ms  181.84ms  181.84ms  cudaDeviceReset
+                    1.61%  104.11ms      1004  103.69us  45.104us  425.42us  cudaMemcpy
+                    0.93%  60.383ms      4000  15.095us  8.5930us  237.76us  cudaFuncGetAttributes
+                    0.71%  46.008ms      1011  45.507us  10.260us  15.676ms  cudaMalloc
+                    0.39%  25.134ms       503  49.969us  28.959us  278.33us  cudaGetDeviceProperties
+                    0.30%  19.222ms      6000  3.2030us  1.4580us  1.3590ms  cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags
+                    0.20%  12.814ms     15000     854ns     468ns  97.083us  cudaPeekAtLastError
+                    0.11%  7.3469ms      3001  2.4480us  1.3540us  51.042us  cudaGetDevice
+                    0.11%  6.8131ms      3000  2.2710us  1.1980us  117.24us  cudaDeviceGetAttribute
+                    0.07%  4.4747ms      4004  1.1170us     520ns  93.281us  cudaGetLastError
+                    0.00%  226.83us       191  1.1870us     625ns  32.396us  cuDeviceGetAttribute
+                    0.00%  192.50us         1  192.50us  192.50us  192.50us  cudaThreadSynchronize
+                    0.00%  140.62us         2  70.312us  40.885us  99.739us  cudaEventRecord
+                    0.00%  84.896us         1  84.896us  84.896us  84.896us  cudaEventSynchronize
+                    0.00%  19.739us         2  9.8690us  4.2710us  15.468us  cudaEventCreate
+                    0.00%  16.614us         2  8.3070us  8.1770us  8.4370us  cuDeviceTotalMem
+                    0.00%  9.9470us         2  4.9730us  2.8640us  7.0830us  cudaEventDestroy
+                    0.00%  8.1250us         1  8.1250us  8.1250us  8.1250us  cudaEventElapsedTime
+                    0.00%  7.9690us         4  1.9920us  1.4060us  3.2820us  cuDeviceGetCount
+                    0.00%  5.4680us         1  5.4680us  5.4680us  5.4680us  cuInit
+                    0.00%  4.2700us         3  1.4230us  1.0410us  2.0310us  cuDeviceGet
+                    0.00%  3.8020us         2  1.9010us  1.7180us  2.0840us  cuDeviceGetName
+                    0.00%  2.3960us         1  2.3960us  2.3960us  2.3960us  cuDriverGetVersion
+                    0.00%  2.1880us         2  1.0940us  1.0420us  1.1460us  cuDeviceGetUuid

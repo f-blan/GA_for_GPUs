@@ -24,10 +24,6 @@ __global__ void init_pop_s(int *pop, int pop_dim, int n_dim, unsigned int *rando
 	for(int t =0; t<n_dim; ++t)
 		pop[tid*n_dim + t] = t;
 
-#if DEBUG_PRINT
-	printf("thread %d taking care of pos %d\nRandom used: %d \n", tid, tid*n_dim,
-	 	random_nums[tid*n_dim]);
-#endif	
 	
 	unsigned int random_start = tid*n_dim;
 	int tmp;
@@ -44,15 +40,6 @@ __global__ void init_pop_s(int *pop, int pop_dim, int n_dim, unsigned int *rando
 			}
 		}
 	}
-#if DEBUG_PRINT
-	if(tid == 0 ){
-		printf("%d ", tid);
-		for(int t =0; t<n_dim; ++t){
-			printf("%d ",random_nums[random_start +t] );
-		}
-		printf("\n");
-	}
-#endif	
 }
 
 //simple shuffle algorithm
@@ -67,9 +54,7 @@ __global__ void shuffle(int *population,int*out, int population_dim, int n_dim, 
 	int i;
 	auxiliary[tid] = tid;
 
-#if DEBUG_PRINT
-	printf("tid: %d, rand: %10u\n", tid, rands[tid] );
-#endif
+
 
 	__syncthreads();
 	//sort the children
@@ -109,9 +94,7 @@ __global__ void swap_with_positions(int *copy, int *out, int *positions, int n_d
 	for(int t=0; t<n_dim; ++t){
 		out[tid*n_dim + t] = copy[pos*n_dim+t];
 	}
-#if DEBUG_PRINT
-	printf("thread: %u, put array to %d. First val: %d\n", tid, pos, out[pos*n_dim]);
-#endif
+
 }
 
 //a way to randomly shuffle the population. Requires some auxiliary vectors
@@ -122,40 +105,8 @@ void thrust_shuffle(int *pop,int * copy, int *positions, curandGenerator_t gen, 
 	curandGenerate(gen, (unsigned int *) rands, population_dim*sizeof(unsigned int));
 
 
-#if DEBUG_PRINT
-	int *hcopy = (int *) malloc(population_dim*n_dim*sizeof(int));
-	unsigned int *hrands = (unsigned int *) malloc(population_dim*sizeof(unsigned int));
-	int *hpos = (int *) malloc(population_dim*sizeof(int));
-
-	cudaMemcpy( hpos, positions, population_dim*sizeof(int), cudaMemcpyDeviceToHost);
-	cudaMemcpy( hcopy, copy, population_dim*n_dim*sizeof(int), cudaMemcpyDeviceToHost);
-	cudaMemcpy( hrands, rands, population_dim*sizeof(unsigned int), cudaMemcpyDeviceToHost);
-
-	printf("displaying copy\n");
-	for(int t=0; t< population_dim; ++t){
-		for(int s=0; s<n_dim; ++s){
-			printf("%d ", hcopy[t*n_dim + s]);
-		}
-		printf("rand: %u, pos: %d\n", hrands[t], hpos[t]);
-	}
-	
-	
-#endif
 	thrust::sort_by_key(thrust::device, rands, rands+population_dim, positions);
 	
-#if DEBUG_PRINT
-	cudaMemcpy( hpos, positions, population_dim*sizeof(int), cudaMemcpyDeviceToHost);
-	cudaMemcpy( hcopy, copy, population_dim*n_dim*sizeof(int), cudaMemcpyDeviceToHost);
-	cudaMemcpy( hrands, rands, population_dim*sizeof(unsigned int), cudaMemcpyDeviceToHost);
-	printf("displaying sorting\n");
-	for(int t=0; t<population_dim; ++t){
-		printf("rand: %u, pos: %d\n", hrands[t], hpos[t]);
-	}
-
-	free(hcopy);
-	free(hpos);
-	free(hrands);
-#endif
 
 
 	cudaDeviceProp prop;
@@ -170,10 +121,6 @@ void thrust_shuffle(int *pop,int * copy, int *positions, curandGenerator_t gen, 
 	if(population_dim<32 ){
 		threads.x = population_dim;
 	}
-#if DEBUG_PRINT
-	printf("launching shuffle init with (%d, %d,%d) threads and %d blocks\n", 
-			threads.x, threads.y, threads.z, blocks.x);
-#endif
 	swap_with_positions<<<blocks, threads>>>(  copy, pop, positions, n_dim, population_dim);
 }
 
