@@ -191,9 +191,7 @@ int main(void){
 		fitnesses[t] = current_fitness;
 #if PRINT_MAIN_LOOP		
 		printf("it %d: currently found fitness is %.2f\n", t, current_fitness);
-#endif
-		fitnesses[t] = current_fitness;
-		
+#endif		
 
 		//shuffle
 		thrust_shuffle(d_population, d_offspring, d_auxiliary, gen, d_shuffle_rands, N_NODES, POPULATION_SIZE);
