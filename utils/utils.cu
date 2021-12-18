@@ -30,6 +30,7 @@ void print_graph(float **g, int n_nodes){
 		printf("%d) ", t);
 		printf("%.1f - %.1f\n", g[t][1],g[t][0]);
 	}
+	printf("-----------\n");
 }
 
 void view_graph(float **g, int n_nodes){
