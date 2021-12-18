@@ -1,2 +1,3 @@
 #define N_NODES 8
 #define OFFSPRING_FACTOR 4
+#define POPULATION_SIZE 32
