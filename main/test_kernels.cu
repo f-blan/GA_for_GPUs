@@ -15,9 +15,9 @@ void test_shuffle();
 
 int main(void){
 	//test_init();
-	//test_ngen();
+	test_ngen();
 	//test_sel();
-	test_shuffle();	
+	//test_shuffle();	
 	
 
 	return 0;
