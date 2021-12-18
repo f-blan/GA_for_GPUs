@@ -48,17 +48,20 @@ __device__ void inversion_mutation(int *vec, int n_dim, unsigned int* random_num
 	*/
 	unsigned int index1 = random_nums[0]%n_dim;
 	unsigned int index2 = random_nums[1]%n_dim;
+
+	if(index1 == index2) return;
 	
 	int incr = (index1>index2 ? -1 : 1);
 	
 	bool go = index1<index2; 
 	
+	
 #if DEBUG_PRINT
 	printf("randomicity through %d, %d, i1: %d, i2: %d\n", random_nums[0], random_nums[1], index1, index2);
 #endif
-
+	int tmp;
 	while (go==(index1<index2)){
-		int tmp = vec[index1];
+		tmp = vec[index1];
 		vec[index1] = vec[index2];
 		vec[index2] = tmp;
 		index1+=incr;
