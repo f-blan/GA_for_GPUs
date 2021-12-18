@@ -1,5 +1,6 @@
 #include <stdio.h>
-
+#include <thrust/extrema.h>
+#include <thrust/device_vector.h>
 
 
 #define SPACE_WIDTH 100
@@ -116,7 +117,15 @@ float evaluate_individual_host(float *graph, int n_dim, int *individual){
 }
 
 
+int scan_best	( float *fitness, int population_dim)
+{
+	thrust::device_ptr<float> f_ptr = thrust::device_pointer_cast(fitness);
 
+	thrust::device_ptr<float> min_ptr = thrust::min_element(f_ptr, f_ptr+population_dim);
+	printf("pos: %d", &min_ptr[0] - &f_ptr[0]);
+	return &min_ptr[0] - &f_ptr[0];
+
+}
 
 
 

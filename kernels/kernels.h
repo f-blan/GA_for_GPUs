@@ -1,5 +1,7 @@
 
 #ifndef MAIN_H
+#include <thrust/sort.h>
+#include <thrust/extrema.h>
 #include "main.h"
 #endif
 #include "kernels.cu"
