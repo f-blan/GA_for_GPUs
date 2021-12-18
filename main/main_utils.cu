@@ -3,6 +3,35 @@
 #include <cuda.h>
 #include "kernels.h"
 
+void print_pop(int *d_pop, int pop_dim){
+	int *pop = (int *) malloc(pop_dim *N_NODES* sizeof(int));
+	cudaMemcpy( pop, d_pop, pop_dim*N_NODES*sizeof(int), cudaMemcpyDeviceToHost);
+	for(int s=0; s< pop_dim; ++s){
+		for(int k =0 ; k<N_NODES; ++k){			
+			printf("%d ", pop[s*N_NODES + k]);
+		}
+		printf("\n");
+	}
+
+	free(pop);
+}
+
+void print_popfit(int *d_pop,float * d_fit, int pop_dim){
+	int *pop = (int *) malloc(pop_dim *N_NODES* sizeof(int));
+	float * fit = (float *) malloc(pop_dim * sizeof(float));
+	cudaMemcpy( pop, d_pop, pop_dim*N_NODES*sizeof(int), cudaMemcpyDeviceToHost);
+	cudaMemcpy( fit, d_fit, POPULATION_SIZE*sizeof(float), cudaMemcpyDeviceToHost);
+	for(int s=0; s< pop_dim; ++s){
+		printf("%d) ", s);
+		for(int k =0 ; k<N_NODES; ++k){			
+			printf("%d ", pop[s*N_NODES + k]);
+		}
+		printf("- %.2f\n", fit[s]);
+	}
+
+	free(pop);
+}
+
 int init_population(int * pop,curandGenerator_t gen, int n_dim, int population_dim){
 	
 	unsigned int * rands;
@@ -24,6 +53,7 @@ int init_population(int * pop,curandGenerator_t gen, int n_dim, int population_d
 	}
         if(population_dim<32 ){
                 threads.x = population_dim;
+		threads.y = 1;
         }
 
 	

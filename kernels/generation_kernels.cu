@@ -58,12 +58,17 @@ __global__ void naive_generation(int* population,
 		}
 	}
 }
+
+
+
+
 __global__ void shared_generation(	int* population, 
 					int n_dim, int *offspring,
 					unsigned int *random_nums)
 {
 #if COMPILE_SHARED
 	//shared vector containing both the population and the offspring
+	//printf("hello\n");
 	__shared__ int s_off[N_NODES*(THREADS_PER_BLOCK)*(OFFSPRING_FACTOR)];
 	unsigned int tid = blockIdx.x*(blockDim.x*blockDim.y) + threadIdx.y*blockDim.x+ threadIdx.x;
 	unsigned int tid_b = threadIdx.y*blockDim.x+ threadIdx.x;
@@ -80,7 +85,7 @@ __global__ void shared_generation(	int* population,
 
 		for(s=1; s<OFFSPRING_FACTOR;++s){
 			s_off[tid_b*N_NODES*OFFSPRING_FACTOR + s*N_NODES + t] = val;
-//			printf("%d - %d \n",tid_b*N_NODES*OFFSPRING_FACTOR + s*N_NODES + t, s_off[tid_b*N_NODES*OFFSPRING_FACTOR + s*N_NODES + t]);
+		
 		}
 	}
 	__syncthreads();
@@ -124,7 +129,7 @@ __global__ void shared_generation(	int* population,
 	//copy back in global arrays
 	for(t=0; t<OFFSPRING_FACTOR; ++t){
 		for(s=0; s<N_NODES; ++s){
-			offspring[tid*N_NODES + t*N_NODES + s] = s_off[tid_b*N_NODES + t*N_NODES + s];
+			offspring[tid*N_NODES*OFFSPRING_FACTOR + t*N_NODES + s] = s_off[tid_b*N_NODES + t*N_NODES + s];
 		}
 	}
 

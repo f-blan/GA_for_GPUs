@@ -10,7 +10,7 @@
 #endif
 
 #define PRINT_SUMMARY 1
-#define DEBUG 0
+#define DEBUG 1
 #define DEBUG_BLOCK 0
 #define PROVIDE_SOL 0
 #define PRINT_MAIN_LOOP 0
@@ -72,17 +72,17 @@ int main(void){
 
 	dim3 threadsP(32,THREADS_PER_BLOCK/32,1);
 	dim3 blocksP(ceil(POPULATION_SIZE/THREADS_PER_BLOCK),1,1); 
-	if(POPULATION_SIZE< THREADS_PER_BLOCK){ 
+	if(POPULATION_SIZE< THREADS_PER_BLOCK || POPULATION_SIZE < 32){ 
 		threadsP.y = (POPULATION_SIZE < 32 ? 1 : POPULATION_SIZE/32);
 		blocksP.x = 1;
 	}
-	if(POPULATION_SIZE<32 ){
+	if(POPULATION_SIZE<32){
 		threadsP.x = POPULATION_SIZE;
 	}
 
 	dim3 threadsS(32,THREADS_PER_BLOCK/32,1);
 	dim3 blocksS(ceil((POPULATION_SIZE*OFFSPRING_FACTOR)/THREADS_PER_BLOCK),1,1); 
-	if(POPULATION_SIZE*OFFSPRING_FACTOR< THREADS_PER_BLOCK){ 
+	if(POPULATION_SIZE*OFFSPRING_FACTOR< THREADS_PER_BLOCK  || POPULATION_SIZE*OFFSPRING_FACTOR < 32){ 
 		threadsS.y = (POPULATION_SIZE*OFFSPRING_FACTOR < 32 ? 1 : POPULATION_SIZE*OFFSPRING_FACTOR/32);
 		blocksS.x = 1;
 	}
@@ -107,7 +107,10 @@ int main(void){
 	CUDA_CALL(cudaEventCreate(&start));
 	CUDA_CALL(cudaEventCreate(&stop));
 	CUDA_CALL(cudaEventRecord(start, 0));
-
+#if DEBUG
+	printf("printing init:\n");
+	print_pop(d_population, POPULATION_SIZE);
+#endif
 	//main loop
 	printf("running main loop\n");
 	for(int t=0; t<N_ITERATIONS; ++t){
@@ -120,7 +123,10 @@ int main(void){
 							N_NODES, 
 							d_offspring,  
 							d_genetic_rands);
-	
+#if DEBUG
+		printf("%d) printing offsrping:\n", t);
+		print_pop(d_offspring, POPULATION_SIZE*OFFSPRING_FACTOR);
+#endif
 #if PRINT_MAIN_LOOP		
 		printf("it %d: applying selection\n", t);
 #endif
@@ -128,13 +134,20 @@ int main(void){
 							d_population,
 							N_NODES,
 							d_fitness);
+#if DEBUG
+		printf("%d) printing next gen:\n", t);
+		print_popfit(d_population, d_fitness, POPULATION_SIZE);
+#endif		
+		
+		
+		
 		//fetch the best of the best
 		//curr_pos = scan_best(d_fitness, POPULATION_SIZE);
 		
 		
 		//record best solution
-		cudaMemcpy( current_best, d_population /*+ curr_pos*N_NODES*/, N_NODES*sizeof(int), cudaMemcpyDeviceToHost);
-		cudaMemcpy( &current_fitness, d_fitness, sizeof(float), cudaMemcpyDeviceToHost);
+		cudaMemcpy( current_best, d_population + curr_pos*N_NODES, N_NODES*sizeof(int), cudaMemcpyDeviceToHost);
+		cudaMemcpy( &current_fitness, d_fitness+ curr_pos, sizeof(float), cudaMemcpyDeviceToHost);
 #if PRINT_MAIN_LOOP		
 		printf("it %d: currently found fitness is %.2f\n", t, current_fitness);
 #endif
@@ -150,7 +163,7 @@ int main(void){
 		} 
 
 		//shuffle
-		thrust_shuffle(d_population, d_offspring, d_auxiliary, gen, d_shuffle_rands, N_NODES, POPULATION_SIZE);
+		//thrust_shuffle(d_population, d_offspring, d_auxiliary, gen, d_shuffle_rands, N_NODES, POPULATION_SIZE);
 				
 
 	}
@@ -208,10 +221,7 @@ int main(void){
 	cudaFree(d_shuffle_rands);
 	cudaFree(d_genetic_rands);
 	cudaFree(d_auxiliary);
-#if DEBUG
-	free(pop);
-	free(off);
-#endif
+
 
 }
 

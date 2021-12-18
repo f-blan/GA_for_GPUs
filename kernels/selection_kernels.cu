@@ -94,6 +94,7 @@ __global__ void island_selection(	int *offspring,
 	//copy into shared memory + evaluation
 	int t;
 	for(t=0; t<N_NODES; ++t){
+		//printf("%d placed %d at pos %d\n", tid, offspring[tid*N_NODES+t], tid_b);
 		s_off[tid_b*N_NODES +t] = offspring[tid*N_NODES +t]; 
 	}
 	s[tid_b]= tid_b;
@@ -132,6 +133,7 @@ __global__ void island_selection(	int *offspring,
 	}
 	//only the best within the block get copied back into next generation
 	if(tid_b < THREADS_PER_BLOCK/OFFSPRING_FACTOR){
+		//printf("tid: %d entered selection, storing to %d %.2f\n", tid, blockIdx.x*(THREADS_PER_BLOCK/OFFSPRING_FACTOR) + tid_b, s_fit[tid_b]);
 		tid_idx = s[tid_b];
 		for(t=0; t<N_NODES; ++t){
 			population[blockIdx.x*(THREADS_PER_BLOCK/OFFSPRING_FACTOR) + tid_b*N_NODES +t] = s_off[tid_idx*N_NODES + t];
