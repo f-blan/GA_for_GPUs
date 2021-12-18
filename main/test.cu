@@ -46,7 +46,7 @@ void test_mutation_ops(){
 	}
 	printf("\n");
 	
-	int rands2[] = {0,4,1,2,3}; 
+	int rands2[] = {4,0,1,2,3}; 
 	inversion_mutation(vec, 5, rands2);
 	printf("invert\n");
 	for(int t = 0; t< 5; ++t){
