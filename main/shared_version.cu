@@ -82,12 +82,16 @@ int main(void){
 
 	dim3 threadsS(32,THREADS_PER_BLOCK/32,1);
 	dim3 blocksS(ceil((POPULATION_SIZE*OFFSPRING_FACTOR)/THREADS_PER_BLOCK),1,1); 
-	if(POPULATION_SIZE*OFFSPRING_FACTOR< THREADS_PER_BLOCK  || POPULATION_SIZE*OFFSPRING_FACTOR < 32){ 
+	if(POPULATION_SIZE*OFFSPRING_FACTOR< THREADS_PER_BLOCK){ 
 		threadsS.y = (POPULATION_SIZE*OFFSPRING_FACTOR < 32 ? 1 : POPULATION_SIZE*OFFSPRING_FACTOR/32);
 		blocksS.x = 1;
 	}
-	if(POPULATION_SIZE*OFFSPRING_FACTOR<32 ){
+	if(POPULATION_SIZE*OFFSPRING_FACTOR<32){
 		threadsS.x = POPULATION_SIZE*OFFSPRING_FACTOR;
+	}
+	if(THREADS_PER_BLOCK < 32){
+		threadsS.x = THREADS_PER_BLOCK;
+		threadsS.y = 1;
 	}
 
 	printf("operation on population will be launched on %d blocks with dim (%d, %d)\n", blocksP.x, threadsP.x,threadsP.y);
@@ -135,6 +139,7 @@ int main(void){
 							N_NODES,
 							d_fitness);
 #if DEBUG
+		cudaDeviceSynchronize();
 		printf("%d) printing next gen:\n", t);
 		print_popfit(d_population, d_fitness, POPULATION_SIZE);
 #endif		

@@ -6,7 +6,7 @@ printing nodes:
 -----------
 initializing population
 operation on population will be launched on 1 blocks with dim (8, 1)
-operation on offspring will be launched on 1 blocks with dim (16, 1)
+operation on offspring will be launched on 2 blocks with dim (8, 1)
 printing init:
 0 3 2 1 
 2 3 1 0 
@@ -34,20 +34,45 @@ running main loop
 2 1 3 0 
 2 1 3 0 
 3 1 2 0 
+0 writing to pos 0
+1 writing to pos 0
+2 writing to pos 0
+3 writing to pos 0
+4 writing to pos 0
+5 writing to pos 0
+6 writing to pos 0
+7 writing to pos 0
+0 writing to pos 0
+1 writing to pos 0
+2 writing to pos 0
+3 writing to pos 0
+4 writing to pos 0
+5 writing to pos 0
+6 writing to pos 0
+7 writing to pos 0
+printing shared off, off 16777248:
+0) 0 3 1 2 - 190.11
+1) 2 3 0 1 - 246.20
+2) 2 3 0 1 - 246.20
+3) 2 3 0 1 - 246.20
+4) 2 3 0 1 - 246.20
+5) 1 3 2 0 - 187.75
+6) 1 3 2 0 - 187.75
+7) 0 3 2 1 - 246.20
 0) printing next gen:
-0) 6 4 7 8 - 0.00
-1) 9 10 11 12 - 0.00
-2) 13 14 15 1 - 0.00
-3) 2 3 0 5 - 163.50
-4) 3 1 0 2 - 0.00
-5) 1 3 2 0 - 0.00
-6) 3 0 1 2 - 0.00
-7) 0 1 2 3 - 0.00
-Iterated 1 times, elapsed time is 2.52 ms, for 2.52 ms/it
+0) 1 3 2 0 - 187.75
+1) 1 3 2 0 - 187.75
+2) 0 3 1 2 - 190.11
+3) 2 3 0 1 - 246.20
+4) 1 3 0 2 - 187.75
+5) 1 3 2 0 - 187.75
+6) 3 0 1 2 - 190.11
+7) 0 1 2 3 - 190.11
+Iterated 1 times, elapsed time is 8.17 ms, for 8.17 ms/it
 summary of iterations:
 -0.00 ->
 
 printing the worst solution as a metric for diversity in the population:
 0 1 2 3 
 best solution found has path length -0.00
--2018816096 ->85 ->0 ->0 ->
+-1587952400 ->85 ->0 ->0 ->
