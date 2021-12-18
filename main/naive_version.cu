@@ -147,6 +147,12 @@ int main(){
 	float current_fitness;
 	float fitnesses[N_ITERATIONS];
 	
+	//use events for measuring performance
+	cudaEvent_t start, stop;
+
+	cudaEventCreate(&start);
+	cudaEventCreate(&stop);
+	cudaEventRecord(start, 0);
 	
 	//main loop
 	for(int t=0; t<N_ITERATIONS; ++t){
@@ -208,6 +214,12 @@ int main(){
 
 	}
 	
+	cudaEventRecord(stop, 0);
+	cudaEventSynchronize(stop);
+
+	float elapsedTime;
+	cudaEventElapsedTime(&elapsedTime, start, stop);
+
 #if PRINT_SUMMARY
 	printf("summary of iterations:\n");
 
@@ -229,6 +241,10 @@ int main(){
 	printf("best solution computed has lengths %.2f\n",evaluate_individual_host(vec_graph,N_NODES,sol));
 	printf("best solution host has lengths %.2f\n",evaluate_individual_host(vec_graph,N_NODES,global_best));
 #endif
+
+	cudaEventDestroy(start);
+	cudaEventDestroy(stop);
+		
 	free(vec_graph);
 	free(global_best);
 	free(current_best);
