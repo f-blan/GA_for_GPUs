@@ -3,8 +3,8 @@
 
 #define MAIN_H
 
-#define N_NODES 48		//length of the hamiltonian cycle in nodes
-#define OFFSPRING_FACTOR 2	//the number of children generated from each individual in the population
+#define N_NODES 60		//length of the hamiltonian cycle in nodes
+#define OFFSPRING_FACTOR 3	//the number of children generated from each individual in the population
 #define POPULATION_SIZE 1024	//the maximum number of individuals in the population
 #define N_ITERATIONS 500	//number of iterations of the algorithm
 #define THREADS_PER_BLOCK 64	//maximum number of threads per block
