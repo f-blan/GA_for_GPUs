@@ -58,3 +58,75 @@ __global__ void naive_generation(int* population,
 		}
 	}
 }
+
+__global__ void shared_generation(	int* population, 
+					int n_dim, int *offspring,
+					unsigned int *random_nums)
+{
+	//shared vector containing both the population and the offspring
+	__shared__ int s_pop[N_NODES*(THREADS_PER_BLOCK)*(OFFSPRING_FACTOR+1)];
+	unsigned int tid = blockIdx.x*(blockDim.x*blockDim.y) + threadIdx.y*blockDim.x+ threadIdx.x;
+	unsigned int tid_b = threadIdx.y*blockDim.x+ threadIdx.x;
+	int *s_off = s_pop + N_NODES*POPULATION_SIZE;
+
+	//copy the parent in all children and its respective position in the shared vector from global memory
+	unsigned int t;
+	for(t=0; t<N_NODES; ++t){
+		s_pop[tid_b*N_NODES + t] = population[tid*N_NODES +t];
+	}
+	for(t = 0; t<N_NODES*OFFSPRING_FACTOR; ++t){
+		s_off[tid_b*N_NODES*OFFSPRING_FACTOR + t] = s_pop[tid_b*N_NODES + t%N_NODES];
+	}
+	__syncthreads();
+
+	//perform genetic ops
+	if((int)threadIdx.y%RECOMBINATION_FACTOR <= SWAP_FACTOR){
+#if DEBUG_PRINT
+		printf("thread from warp: %d performing swap\n",threadIdx.y);
+#endif		
+		for(t=0; t< OFFSPRING_FACTOR; ++t){
+			
+			swap_mutation(	s_off+(tid_b*N_NODES*OFFSPRING_FACTOR +N_NODES*t), 
+					N_NODES, 
+					random_nums + ((tid/32)*3 + 3*t));
+		}
+	}else if((int)threadIdx.y%RECOMBINATION_FACTOR <= INVERT_FACTOR){
+#if DEBUG_PRINT
+		printf("thread from warp: %d performing inversion\n", threadIdx.y);
+#endif	
+		for(t=0; t< OFFSPRING_FACTOR; ++t){
+			
+			inversion_mutation(	s_off+(tid_b*N_NODES*OFFSPRING_FACTOR +N_NODES*t), 
+						N_NODES, 
+						random_nums + ((tid/32)*3 + 3*t));
+
+		}
+	}else{
+#if DEBUG_PRINT
+		printf("thread from warp: %d performing cycle crossover\n", threadIdx.y);
+#endif
+		for(t=0; t< OFFSPRING_FACTOR; ++t){
+			
+			cycle_crossover(	s_off+(tid_b*N_NODES*OFFSPRING_FACTOR +N_NODES*t), 
+						s_pop,
+						blockDim.x*blockDim.y,
+						N_NODES, 
+						random_nums + ((tid/32)*3 + 3*t),
+						tid);
+		}
+	}
+	int s;
+	//copy back in global arrays
+	for(t=0; t<OFFSPRING_FACTOR; ++t){
+		for(s=0; s<N_NODES; ++s){
+			offspring[tid*N_NODES + t*N_NODES + s] = s_off[tid_b*N_NODES + t*N_NODES + s];
+		}
+	}
+
+	
+}
+
+
+
+
+
