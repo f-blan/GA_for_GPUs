@@ -65,7 +65,7 @@ __global__ void shared_generation(	int* population,
 					unsigned int *random_nums)
 {
 #if COMPILE_SHARED
-	//shared vector containing both the population and the offspring
+	//shared vector containing offspring
 	//printf("hello\n");
 	__shared__ int s_off[N_NODES*THREADS_PER_BLOCK*OFFSPRING_FACTOR];
 	unsigned int tid = blockIdx.x*(blockDim.x*blockDim.y) + threadIdx.y*blockDim.x+ threadIdx.x;
@@ -75,18 +75,22 @@ __global__ void shared_generation(	int* population,
 	unsigned int t;
 	int val;
 	int s;
-	for(t =0; t<N_NODES*OFFSPRING_FACTOR; ++t){
+	/*for(t =0; t<N_NODES*OFFSPRING_FACTOR; ++t){
+		s_off[tid_b*N_NODES*OFFSPRING_FACTOR + t] = population[tid*N_NODES + t];
+	}*/
+	
+	for(t =0; t<N_NODES; ++t){
 		s_off[tid_b*N_NODES*OFFSPRING_FACTOR + t] = population[tid*N_NODES + t];
 	}
-	/*for(t = 0; t<N_NODES; ++t){
+	for(t = 0; t<N_NODES; ++t){
 		val = s_off[tid_b*N_NODES*OFFSPRING_FACTOR + t];
 
 		for(s=1; s<OFFSPRING_FACTOR;++s){
 			s_off[tid_b*N_NODES*OFFSPRING_FACTOR + s*N_NODES + t] = val;
 		
 		}
-	}*/
-	__syncthreads();
+	}
+	//__syncthreads();
 
 	//perform genetic ops
 	if(( blockIdx.x*blockDim.y + (int)threadIdx.y)%RECOMBINATION_FACTOR <= SWAP_FACTOR){
