@@ -20,7 +20,7 @@
 			OFFSPRING_SIZE would just generate the same child but replicated).
 */
 
-void swap_mutation(int *vec, int n_dim, unsigned int* random_nums){
+__device__ void swap_mutation(int *vec, int n_dim, unsigned int* random_nums){
 	/*
 		mutation genetic operator: two random indexes are chosen, 
 		and their content are swapped
@@ -36,7 +36,7 @@ void swap_mutation(int *vec, int n_dim, unsigned int* random_nums){
 	vec[index2] = tmp;
 }
 
-void inversion_mutation(int *vec, int n_dim, unsigned int* random_nums){
+__device__ void inversion_mutation(int *vec, int n_dim, unsigned int* random_nums){
 	/*
 		mutation genetic operator: two random indexes are chosen, 
 		all the content between them is inverted
@@ -58,7 +58,13 @@ void inversion_mutation(int *vec, int n_dim, unsigned int* random_nums){
 	}
 }
 
-void cycle_crossover(int *parent1, int *population, int population_dim, int n_dim,unsigned int *random_nums, int p1_i){
+__device__ void cycle_crossover(	int *parent1, 
+					int *population, 
+					int population_dim, 
+					int n_dim,
+					unsigned int *random_nums, 
+					int p1_i
+){
 	/*
 		recombination genetic operator: two random indexes are chosen,
 		everything between them is kept, the rest of the array is reconstructed

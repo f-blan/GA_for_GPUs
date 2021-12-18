@@ -1,7 +1,7 @@
 #include <stdio.h>
 
 #define SWAP_ITERATIONS 2
-#define DEBUG_PRINT 1
+#define DEBUG_PRINT 0
 
 //simple function to initialize the population pseudo randomly
 __global__ void init_pop(int *pop, int pop_dim, int n_dim, unsigned int *random_nums, int r_dim){
@@ -44,6 +44,9 @@ __global__ void init_pop(int *pop, int pop_dim, int n_dim, unsigned int *random_
 
 
 //simple function to initialize the population pseudo randomly
+
+//this performs a bubble sort based on the random numbers generated, and produces the related permutation
+//on the individual
 __global__ void init_pop_s(int *pop, int pop_dim, int n_dim, unsigned int *random_nums, int r_dim){
 
 	int tid = blockIdx.x*(blockDim.x*blockDim.y) + threadIdx.y*32+ threadIdx.x;
