@@ -1,6 +1,6 @@
 #include <cuda.h>
 #include <curand.h>
-#define N_NODES 32		//length of the hamiltonian cycle in nodes
+#define N_NODES 48		//length of the hamiltonian cycle in nodes
 #define OFFSPRING_FACTOR 4	//the number of children generated from each individual in the population
 #define POPULATION_SIZE 1024	//the maximum number of individuals in the population
 #define N_ITERATIONS 500	//number of iterations of the algorithm

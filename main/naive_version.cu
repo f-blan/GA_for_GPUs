@@ -12,6 +12,8 @@
 #define DEBUG_BLOCK 0
 #define PROVIDE_SOL 0
 #define PRINT_MAIN_LOOP 0
+#define PRINT_WORST 1
+
 
 int init_population(int * pop,curandGenerator_t gen, int n_dim, int population_dim){
 	
@@ -238,6 +240,16 @@ int main(){
 
 	for(int t=0; t<N_ITERATIONS; ++t){
 		printf("%.2f ->", fitnesses[t]);
+	}
+	printf("\n");
+#endif
+
+#if PRINT_WORST
+	printf("printing the worst solution as a metric for diversity in the population:\n");
+	int *worst = (int*) malloc(N_NODES*sizeof(int));
+	cudaMemcpy( worst, d_population+N_NODES*(POPULATION_SIZE-1), N_NODES*sizeof(int), cudaMemcpyDeviceToHost);
+	for(int t=0; t<N_NODES; ++t){
+		printf("%d ", worst[t]);
 	}
 	printf("\n");
 #endif
