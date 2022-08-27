@@ -95,6 +95,8 @@ __global__ void swap_with_positions(int *copy, int *out, int *positions, int n_d
 		out[tid*n_dim + t] = copy[pos*n_dim+t];
 	}
 
+	//this line was added after the experiments were performed...
+	positions[tid] = tid;
 }
 
 //a way to randomly shuffle the population. Requires some auxiliary vectors
