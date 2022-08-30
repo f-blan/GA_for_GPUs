@@ -64,7 +64,7 @@ For the main application a total of 4 genetic operators were developed: swap mut
 
 This simple operator takes one individual as input, and selects two loci randomly: the content of the two loci is swapped. Altough it's a small change, it's worth noting that this mutation can lead to large differences in terms of fitness between parent and offspring individuals, as in our case it changes 4 links in the hamiltonian path.
 
-![pic](./imgs/swap.png)
+![pic](./imgs/swap.PNG)
 
 
 ### Inversion mutation
@@ -72,7 +72,7 @@ This simple operator takes one individual as input, and selects two loci randoml
 The inversion mutation also takes as input a single individual and selects once again 2 loci in a random way: the order of the alleles between these two loci is inverted. This mutation is slightly more complex than the swap, but actually it changes only 2 links in the path (the ones linking the two selected loci with the external ones)
 
 
-![pic](./imgs/inversion.png)
+![pic](./imgs/inversion.PNG)
 
 
 
@@ -84,7 +84,7 @@ This is the only recombination operator implemented and it's also the most compl
 2. The rest of the missing loci are reconstructed from parent 2 (the links coming it are not necessarily kept intact)
 
 
-![pic](./imgs/cycle_crossover.png)
+![pic](./imgs/cycle_crossover.PNG)
 <br>
 
 Cycle crossover can change a large amount of links in the path, however most of them will be reconstructed from solutions belonging to the population, which means that they have high chances to be good links (as opposed to links generated purely from randomness). It is also worth noting that the instruction flow depends both on randomness (the loci selected) and on the data (the reconstruction of the genome from parent 2 requires checks and conditional assignments), which is what makes this genetic operator the most tricky to be implemented efficiently.
@@ -173,13 +173,13 @@ All the models performed nearly in the same way in terms of quality of the solut
 For clarity, also some pictures of the generated paths are reported (they can be checked [Here](https://colab.research.google.com/drive/1EYaF1PwMCuz9yRErvk1h2SPhb2NipQgq#scrollTo=pAulKmTal2es)):
 
 
-![pic](./imgs/GAmedium.png)
+![pic](./imgs/GAmedium.PNG)
 * GA solution for the medium graph
 
-![pic](./imgs/GAlarge.png)
+![pic](./imgs/GAlarge.PNG)
 * GA solution for the large graph
 
-![pic](./imgs/GAxl.png)
+![pic](./imgs/GAxl.PNG)
 * GA solution for the extra large graph
 
 
@@ -188,7 +188,7 @@ To get an idea of the quality of the proposed solution it may be worth taking a 
 
 [Here](https://colab.research.google.com/drive/1wXcoppMPPXXV-xNYpael242_TRqEZZpI) a sequential solution developed in python can be found. The algorithm operates on a graph of 35 nodes and iterates until convergence, however the time performances don't allow to perform computations in a reasonable time with the same population configuration as the GPU version. The population size was reduced to 50 individuals and the offspring factor was kept at 4: the sequential version takes nearly one minute to run and, despite the graph being rather small in size, the drastic decrease in population size leads to a final solution that presents some clearly sub optimal parts.
 
-![pic](./imgs/pythonGA.png)
+![pic](./imgs/pythonGA.PNG)
 * GA solution for a TSP graph of 35 nodes. The top right side of the graph presents a sequence of links that are clearly not optimal
 
 Therefore, the baseline version definitely presents a very high improvement with respect to the sequential problem. As we could see from the results, it is able to find the optimal path for graphs of up to 48 nodes, and managed to give a solution very close to the optimal one even for a graph of 96 nodes (reminder: this means a search space with a number of candidate solutions that has roughly 147 digits!).
